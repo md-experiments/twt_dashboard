@@ -1,0 +1,19 @@
+.vscode
+tmp/
+
+
+# Model checkpoints
+*.pt
+
+
+.DS_Store
+__pycache__/
+
+.ipynb_checkpoints/
+
+# Data file
+data/
+
+#Environments
+env_twt_dash/
+
