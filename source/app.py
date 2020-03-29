@@ -21,12 +21,15 @@ app_dash = Dash(__name__,
                server=app,
                url_base_pathname='/')
 
-df_tpc=pd.read_csv('AI_topics.csv', index_col=0)
+
+path='data/'
+
+df_tpc=pd.read_csv(f'{path}AI_topics.csv', index_col=0)
 selected_topics=[tpc.lower() for tpc in df_tpc.index.values]
 
-df_aut=pd.read_csv('AI_authors.csv', index_col=0)
-df_tim=pd.read_csv('AI_time.csv', index_col=0)
-df_txt=pd.read_csv('AI_body.csv', index_col=0)
+df_aut=pd.read_csv(f'{path}AI_authors.csv', index_col=0)
+df_tim=pd.read_csv(f'{path}AI_time.csv', index_col=0)
+df_txt=pd.read_csv(f'{path}AI_body.csv', index_col=0)
 df_txt=df_txt.rename(columns={'Favorite Count': 'Favs','Retweet Count': 'RT'})
 cols_from_txt=list(df_txt.columns.values)
 cols_from_txt.remove('Place')
