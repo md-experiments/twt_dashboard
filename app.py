@@ -34,10 +34,13 @@ df_txt=df_txt.rename(columns={'Favorite Count': 'Favs','Retweet Count': 'RT'})
 cols_from_txt=list(df_txt.columns.values)
 cols_from_txt.remove('Place')
 cols_from_txt.remove('Id Str')
+cols_from_txt.remove('Url')
+cols_from_txt.remove('Mentions')
+cols_from_txt.remove('Hashtags')
 df_txt['Hashtags_lower']=df_txt.Hashtags.apply(lambda x: [z.lower() for z in eval(x)])
-df_txt['Hashtags']=df_txt.Hashtags.apply(lambda x: ', '.join(["#" + z for z in eval(x)]))
-df_txt['Url']=df_txt.Url.apply(lambda x: ', '.join([z for z in eval(x)]))
-df_txt['Mentions']=df_txt.Mentions.apply(lambda x: ', '.join(["@" + z for z in eval(x)]))
+#df_txt['Hashtags']=df_txt.Hashtags.apply(lambda x: ', '.join(["#" + z for z in eval(x)]))
+#df_txt['Url']=df_txt.Url.apply(lambda x: ', '.join([z for z in eval(x)]))
+#df_txt['Mentions']=df_txt.Mentions.apply(lambda x: ', '.join(["@" + z for z in eval(x)]))
 
 app_dash.layout = html.Div(id='dash-container',
                         children=[
@@ -194,4 +197,4 @@ def MyDashApp():
     return app_dash.index()
 
 if __name__ == '__main__':
-    app.run(port=4990, debug=True)
+    app.run(host='0.0.0.0', debug=True)
