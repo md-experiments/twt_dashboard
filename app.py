@@ -1,7 +1,9 @@
+import dash
+from pages import index, news, twt
+
+
 import sys
 #sys.path.append('/Users/md/Downloads/cc_f20')
-
-
 __author__ = 'CountingChickens'
 
 from dash import Dash
@@ -10,104 +12,65 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_table
 
-import pandas as pd
-
 from flask import Flask, render_template, request, session, make_response
 
+import pandas as pd
+from pages.news_data import n
+from pages.twt_data import ai,cof,tea
+
+tw=tea
+
+print(dcc.__version__) # 0.6.0 or above is required
+
+#app = dash.Dash()
 app = Flask(__name__)  # '__main__'
-
-
 app_dash = Dash(__name__,
                server=app,
                url_base_pathname='/')
 
+app_dash.config.suppress_callback_exceptions = True
 
-path='data/'
+app_dash.layout = html.Div([
+    dcc.Location(id='url', refresh=False),
+    html.Div(id='page-content')
+])
 
-df_tpc=pd.read_csv(f'{path}AI_topics.csv', index_col=0)
-selected_topics=[tpc.lower() for tpc in df_tpc.index.values]
+# Page 1 callback
+@app_dash.callback(dash.dependencies.Output('page-1-content', 'children'),
+              [dash.dependencies.Input('page-1-dropdown', 'value')])
+def page_1_dropdown(value):
+    return 'You have selected "{}"'.format(value)
 
-df_aut=pd.read_csv(f'{path}AI_authors.csv', index_col=0)
-df_tim=pd.read_csv(f'{path}AI_time.csv', index_col=0)
-df_txt=pd.read_csv(f'{path}AI_body.csv', index_col=0)
-df_txt=df_txt.rename(columns={'Favorite Count': 'Favs','Retweet Count': 'RT'})
-cols_from_txt=list(df_txt.columns.values)
-cols_from_txt.remove('Place')
-cols_from_txt.remove('Id Str')
-cols_from_txt.remove('Url')
-cols_from_txt.remove('Mentions')
-cols_from_txt.remove('Hashtags')
-df_txt['Hashtags_lower']=df_txt.Hashtags.apply(lambda x: [z.lower() for z in eval(x)])
-#df_txt['Hashtags']=df_txt.Hashtags.apply(lambda x: ', '.join(["#" + z for z in eval(x)]))
-#df_txt['Url']=df_txt.Url.apply(lambda x: ', '.join([z for z in eval(x)]))
-#df_txt['Mentions']=df_txt.Mentions.apply(lambda x: ', '.join(["@" + z for z in eval(x)]))
+# Page 2
+@app_dash.callback(Output('page-2-content', 'children'),
+              [Input('page-2-radios', 'value')])
+def page_2_radios(value):
+    return 'You have selected "{}"'.format(value)
 
-app_dash.layout = html.Div(id='dash-container',
-                        children=[
+# Index Page callback
+@app_dash.callback(Output('page-content', 'children'),
+              [Input('url', 'pathname')])
+def display_page(pathname):
+    if pathname == '/TEA':
+        return twt.twt_layout(tea,'TEA')
+    if pathname == '/COFFEE':
+        return twt.twt_layout(cof,'COFFEE')
+    if pathname == '/AI':
+        return twt.twt_layout(ai,'AI')
 
-                            html.Div(
-                                [dcc.Graph(
-                                style={'height': 300},
-                                id='bar-mentions-counts',
-                                figure=dict(
-                                    data= [
-                                            {'x': list(df_tpc.index.values), 'y': list(df_tpc.Mentions.values), 'type': 'bar', 'name': 'Nr Tweets'}
-                                        ],
-                                    layout=dict(
-                                        title='Top 50 Hashtags for #AI',
-                                        showlegend=True,
-                                        legend=dict(
-                                            x=0,
-                                            y=1.0
-                                        ),
-                                        margin=dict(l=40, r=0, t=40, b=80)
-                                    )
-                                )
-                                )]  ,
-                                #style={'width': '25%', 'display': 'inline-block'}
-                                ), 
-                            html.Div(
-                                [dcc.Graph(
-                                style={'height': 300},
-                                id='my-graph'
-                                )]  ,
-                                style={'width': '70%', 'display': 'inline-block'}
-                                ), 
-                            html.Div(
-                                [dcc.Graph(
-                                style={'height': 300},
-                                id='bar-authors-counts',
-                                )]  ,
-                                style={'width': '30%', 'display': 'inline-block'}
-                                ), 
-                            html.H1('',''),
-                            html.Div(
-                                [dash_table.DataTable(
-                                id='nws-table',
-                                columns=[{"name": i, "id": i} for i in cols_from_txt],
-                                #fixed_rows={'headers': True},
-                                style_cell={'textAlign': 'left'},
-                                style_data={
-                                        'whiteSpace': 'normal',
-                                        'height': 'auto'
-                                    },
-                                style_as_list_view=True,
-                                style_data_conditional=[
-                                    {
-                                        'if': {'row_index': 'odd'},
-                                        'backgroundColor': 'rgb(248, 248, 248)'
-                                    }
-                                ],
-                                style_header={
-                                    'backgroundColor': 'rgb(230, 230, 230)',
-                                    'fontWeight': 'bold'
-                                }
-                            )]
-                            )
-                        ])
 
-@app_dash.callback(Output('my-graph',  'figure'),
-              [Input('bar-mentions-counts', 'clickData')])
+    elif pathname == '/page-2':
+        return news.page_2_layout
+    else:
+        return index.index_page
+'''
+app.css.append_css({
+    'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
+})
+'''
+
+@app_dash.callback(Output('nws-graph',  'figure'),
+              [Input('nws-bar-mentions-counts', 'clickData')])
 def update_figure(list_from_click):
     '''
     if isinstance(list_of_stocks,str):
@@ -119,12 +82,12 @@ def update_figure(list_from_click):
     if list_from_click:
         list_of_topics=[clk['x'] for clk in list_from_click['points']]
     else:
-        list_of_topics=['ai']
+        list_of_topics=[n.default_category]
 
     data=[
             dict(
-                    x=list(df_tim[df_tim.term==hashtag.lower()].time.values),
-                    y=list(df_tim[df_tim.term==hashtag.lower()].id.values),
+                    x=list(n.df_tim[n.df_tim.term==hashtag.lower()].time.values),
+                    y=list(n.df_tim[n.df_tim.term==hashtag.lower()].id.values),
                     name=hashtag,
                 ) for hashtag in list_of_topics
         ]
@@ -144,19 +107,19 @@ def update_figure(list_from_click):
         )
     )
 
-@app_dash.callback(Output('bar-authors-counts',  'figure'),
-              [Input('bar-mentions-counts', 'clickData')])
+@app_dash.callback(Output('nws-bar-authors-counts',  'figure'),
+              [Input('nws-bar-mentions-counts', 'clickData')])
 def update_bar_authors(list_from_click):
 
     if list_from_click:
         list_of_topics=[clk['x'] for clk in list_from_click['points']]
     else:
-        list_of_topics=['ai']
-    authors_limit=30
+        list_of_topics=[n.default_category]
+    
     data=[
             dict(
-                    x=list(df_aut[df_aut.term==hashtag.lower()].original_user.iloc[:authors_limit].values),
-                    y=list(df_aut[df_aut.term==hashtag.lower()].id.iloc[:authors_limit].values),
+                    x=list(n.df_aut[n.df_aut.term==hashtag.lower()][n.col_entity].iloc[:n.authors_limit].values),
+                    y=list(n.df_aut[n.df_aut.term==hashtag.lower()].id.iloc[:n.authors_limit].values),
                     type='bar',
                     name='#'+hashtag,
                 ) for hashtag in list_of_topics
@@ -164,7 +127,7 @@ def update_bar_authors(list_from_click):
     return dict(
         data= data,
         layout=dict(
-            title='Nr Tweets by Author per Hashatag',
+            title=n.authors_title,
             showlegend=True,
             legend=dict(
                 x=0,
@@ -176,20 +139,122 @@ def update_bar_authors(list_from_click):
 
 
 @app_dash.callback(Output('nws-table',  'data'),
-              [Input('bar-mentions-counts', 'clickData')])
+              [Input('nws-bar-mentions-counts', 'clickData')])
 def update_table(list_from_click):
 
     if list_from_click:
         list_of_stocks=[clk['x'].lower() for clk in list_from_click['points']]
     else:
-        list_of_stocks=['ai']
+        list_of_stocks=[n.default_category]
 
-    df_out=df_txt.copy()
-    indicator=df_txt['Hashtags_lower'].apply(lambda x: len(set(x) & set(list_of_stocks))>0).values
-    df_out=df_out[indicator].sort_values('Favs', ascending=False)
-    df_out=df_out[cols_from_txt]
+    df_out=n.df_txt.copy()
+    indicator=n.df_txt['Hashtags_lower'].apply(lambda x: len(set(x) & set(list_of_stocks))>0).values
+    df_out=df_out[indicator].sort_values(n.sort_col, ascending=n.sort_ascending)
+    df_out=df_out[n.cols_from_txt]
     
     return df_out.to_dict('records')
+
+
+@app_dash.callback(Output('twt-graph',  'figure'),
+              [Input('twt-bar-mentions-counts', 'clickData'),Input('twt-h1', 'children')])
+def update_figure(list_from_click, title):
+    if title.startswith('#TEA'):
+        tw=tea
+    elif title.startswith('#COFFEE'):
+        tw=cof
+    else:
+        tw=ai
+
+    if list_from_click:
+        list_of_topics=[clk['x'] for clk in list_from_click['points']]
+    else:
+        list_of_topics=[tw.default_category]
+
+    data=[
+            dict(
+                    x=list(tw.df_tim[tw.df_tim.term==hashtag.lower()].time.values),
+                    y=list(tw.df_tim[tw.df_tim.term==hashtag.lower()].id.values),
+                    name=hashtag,
+                ) for hashtag in list_of_topics
+        ]
+    return dict(
+        data=data
+        ,
+        layout=dict(
+            title='Mentions over time',
+            showlegend=True,
+            legend=dict(
+                x=0,
+                y=1.0
+            ),
+            xaxis=dict(type='category',nticks=15),
+            xaxis_tickformat ='%Y-%m-%d',            
+            margin=dict(l=40, r=0, t=40, b=70), 
+        )
+    )
+
+@app_dash.callback(Output('twt-bar-authors-counts',  'figure'),
+              [Input('twt-bar-mentions-counts', 'clickData'),Input('twt-h1', 'children')])
+def update_bar_authors(list_from_click, title):
+    if title.startswith('#TEA'):
+        tw=tea
+    elif title.startswith('#COFFEE'):
+        tw=cof
+    else:
+        tw=ai
+
+    if list_from_click:
+        list_of_topics=[clk['x'] for clk in list_from_click['points']]
+    else:
+        list_of_topics=[tw.default_category]
+
+    data=[
+            dict(
+                    x=list(tw.df_aut[tw.df_aut.term==hashtag.lower()].original_user.iloc[:tw.authors_limit].values),
+                    y=list(tw.df_aut[tw.df_aut.term==hashtag.lower()].id.iloc[:tw.authors_limit].values),
+                    type='bar',
+                    name='#'+hashtag,
+                ) for hashtag in list_of_topics
+        ]
+    return dict(
+        data= data,
+        layout=dict(
+            title=tw.authors_title,
+            showlegend=True,
+            legend=dict(
+                x=0,
+                y=1.0
+            ),
+            margin=dict(l=40, r=0, t=40, b=80)
+        )
+        )
+
+
+@app_dash.callback(Output('twt-table',  'data'),
+              [Input('twt-bar-mentions-counts', 'clickData'),Input('twt-h1', 'children')])
+def update_table(list_from_click, title):
+    if title.startswith('#TEA'):
+        tw=tea
+    elif title.startswith('#COFFEE'):
+        tw=cof
+    else:
+        tw=ai
+
+    if list_from_click:
+        list_of_stocks=[clk['x'].lower() for clk in list_from_click['points']]
+    else:
+        list_of_stocks=[tw.default_category]
+
+    df_out=tw.df_txt.copy()
+    indicator=tw.df_txt['Hashtags_lower'].apply(lambda x: len(set(x) & set(list_of_stocks))>0).values
+    df_out=df_out[indicator].sort_values(tw.txt_sort_col, ascending=tw.txt_sort_ascending)
+    df_out=df_out[tw.cols_from_txt]
+    
+    return df_out.to_dict('records')
+
+
+#if __name__ == '__main__':
+#    app.run_server(host='0.0.0.0',debug=True)
 
 
 @app.route("/dash")
