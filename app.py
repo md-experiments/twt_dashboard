@@ -11,58 +11,80 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import dash_table
+import plotly.express as px
 
 from flask import Flask, render_template, request, session, make_response
 
 import pandas as pd
 from pages.news_data import n
-from pages.twt_data import ai,cof,tea
-
-tw=tea
+from pages.twt_data import ai,cof,tea, fert, food, mind, select_tw
 
 print(dcc.__version__) # 0.6.0 or above is required
 
 #app = dash.Dash()
 app = Flask(__name__)  # '__main__'
+
+
+@app.route("/", methods=["GET"])
+def home():
+    return render_template("home.html")
+
+external_stylesheets = [
+    dict(
+        rel="stylesheet",
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" ,
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" ,
+        crossorigin="anonymous"
+    )
+]
+
 app_dash = Dash(__name__,
                server=app,
-               url_base_pathname='/')
+               url_base_pathname='/dashboards/',
+               external_stylesheets=external_stylesheets)
 
 app_dash.config.suppress_callback_exceptions = True
 
 app_dash.layout = html.Div([
-    dcc.Location(id='url', refresh=False),
+    dcc.Location(id='url', refresh=True),
     html.Div(id='page-content')
 ])
+app_dash.title = 'CountingChickens'
 
-# Page 1 callback
-@app_dash.callback(dash.dependencies.Output('page-1-content', 'children'),
-              [dash.dependencies.Input('page-1-dropdown', 'value')])
-def page_1_dropdown(value):
-    return 'You have selected "{}"'.format(value)
-
-# Page 2
-@app_dash.callback(Output('page-2-content', 'children'),
-              [Input('page-2-radios', 'value')])
-def page_2_radios(value):
-    return 'You have selected "{}"'.format(value)
-
+'''@app.route("/dash")
+def MyDashApp():
+    app_dash.title = "Title: %s"%(path)
+    return app_dash.index()
+'''
 # Index Page callback
 @app_dash.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
-    if pathname == '/TEA':
+    if pathname == '/dashboards/TEA':
+        app_dash.update_title = '#TEA | CountingChickens'
         return twt.twt_layout(tea,'TEA')
-    if pathname == '/COFFEE':
+    elif pathname == '/dashboards/COFFEE':
+        app_dash.title = '#COFFEE | CountingChickens'
         return twt.twt_layout(cof,'COFFEE')
-    if pathname == '/AI':
+    elif pathname == '/dashboards/FERTILITY':
+        app_dash.title = '#FERTILITY | CountingChickens'
+        return twt.twt_layout(fert,'FERTILITY')
+    elif pathname == '/dashboards/MINDSET':
+        app_dash.title = '#MINDSET | CountingChickens'
+        return twt.twt_layout(mind,'MINDSET')
+    elif pathname == '/dashboards/FOOD':
+        app_dash.title = '#FOOD | CountingChickens'
+        return twt.twt_layout(food,'FOOD')
+    elif pathname == '/dashboards/AI':
+        app_dash.title = '#AI | CountingChickens'
         return twt.twt_layout(ai,'AI')
-
-
-    elif pathname == '/page-2':
+    elif pathname == '/dashboards/NEWS':
+        app_dash.title = 'News | CountingChickens'
         return news.page_2_layout
     else:
-        return index.index_page
+        app_dash.title = 'Nest page | CountingChickens'
+        return render_template("home.html")
+        '''index.index_page'''
 '''
 app.css.append_css({
     'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
@@ -158,12 +180,7 @@ def update_table(list_from_click):
 @app_dash.callback(Output('twt-graph',  'figure'),
               [Input('twt-bar-mentions-counts', 'clickData'),Input('twt-h1', 'children')])
 def update_figure(list_from_click, title):
-    if title.startswith('#TEA'):
-        tw=tea
-    elif title.startswith('#COFFEE'):
-        tw=cof
-    else:
-        tw=ai
+    tw=select_tw(title)
 
     if list_from_click:
         list_of_topics=[clk['x'] for clk in list_from_click['points']]
@@ -196,12 +213,7 @@ def update_figure(list_from_click, title):
 @app_dash.callback(Output('twt-bar-authors-counts',  'figure'),
               [Input('twt-bar-mentions-counts', 'clickData'),Input('twt-h1', 'children')])
 def update_bar_authors(list_from_click, title):
-    if title.startswith('#TEA'):
-        tw=tea
-    elif title.startswith('#COFFEE'):
-        tw=cof
-    else:
-        tw=ai
+    tw=select_tw(title)
 
     if list_from_click:
         list_of_topics=[clk['x'] for clk in list_from_click['points']]
@@ -233,12 +245,7 @@ def update_bar_authors(list_from_click, title):
 @app_dash.callback(Output('twt-table',  'data'),
               [Input('twt-bar-mentions-counts', 'clickData'),Input('twt-h1', 'children')])
 def update_table(list_from_click, title):
-    if title.startswith('#TEA'):
-        tw=tea
-    elif title.startswith('#COFFEE'):
-        tw=cof
-    else:
-        tw=ai
+    tw=select_tw(title)
 
     if list_from_click:
         list_of_stocks=[clk['x'].lower() for clk in list_from_click['points']]
@@ -253,13 +260,33 @@ def update_table(list_from_click, title):
     return df_out.to_dict('records')
 
 
+@app_dash.callback(Output('twt-map',  'figure'),
+              [Input('twt-bar-mentions-counts', 'clickData'),Input('twt-h1', 'children')])
+def update_map(list_from_click, title):
+    tw=select_tw(title)
+
+    if list_from_click:
+        list_of_stocks=[clk['x'].lower() for clk in list_from_click['points']]
+    else:
+        list_of_stocks=[tw.default_category]
+
+    selected_df=tw.df_geo[tw.df_geo.Term.isin(list_of_stocks)]
+
+    rng_min=selected_df.Tweets.min()
+    rng_max=selected_df.Tweets.max()
+    figure=px.density_mapbox(data_frame=selected_df,lat='lat', lon='lon', z='Tweets', radius=20,
+                            center = {"lat": 37.0902, "lon": -0.7129},zoom=0,
+                            hover_name="original_location", hover_data=["Tweets", "Term"],
+                            color_continuous_scale="Viridis",
+                            range_color=(rng_min, rng_max),
+                            mapbox_style="carto-positron")
+    #figure.update_layout(margin={"r":1,"t":1.5,"l":1,"b":0.5})
+    figure.update_layout(margin={"t":3,"b":6})
+    return figure
+
 #if __name__ == '__main__':
 #    app.run_server(host='0.0.0.0',debug=True)
 
-
-@app.route("/dash")
-def MyDashApp():
-    return app_dash.index()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

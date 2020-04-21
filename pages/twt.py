@@ -12,20 +12,32 @@ import dash_table
 import pandas as pd
 #from pages.twt_data import tw
 
+def card(nr,link_nm,title):
+    return html.Div(
+        id=f'main-{nr}',
+        children=[
+            html.Br(),
+            html.Img(src=f'/static/{link_nm}.png', className='card-img'),
+            dcc.Link(f'Twitter: #{title}', href=f'/dashboards/{link_nm.upper()}'),
+            ],
+        style={'width': '15%', 'display': 'inline-block'},
+        className='card'  
+    )
+
 
 def twt_layout(tw, topic):
-    links=['AI','TEA','COFFEE']
+    links=['TEA','COFFEE','FOOD','FERTILITY','MINDSET','AI']
+    titles=['Tea','Coffee','Food','Fertility','LifeCoach','AI']
+    titles.pop(links.index(topic))
     links.remove(topic)
+    
 
     return html.Div([
     html.H1(id='twt-h1',children=f'#{topic} Tweets Dashboard'),
     html.Div(id='page-1-content'),
-    html.Br(),
-    dcc.Link(f'Go to #{links[0]}', href=f'/{links[0]}'),
-    html.Br(),
-    dcc.Link(f'Go to #{links[1]}', href=f'/{links[1]}'),
+    html.Div([card(i,links[i],titles[i]) for i in range(len(links))]),
     html.Br(),   
-    dcc.Link('Go to News', href='/page-2'),
+    dcc.Link('Go to News', href='/NEWS'),
     html.Br(),
     dcc.Link('Go back to home', href='/'),
     html.Div(id='dash-container',
@@ -57,7 +69,14 @@ def twt_layout(tw, topic):
                                 style={'height': 300},
                                 id='twt-graph'
                                 )]  ,
-                                style={'width': '70%', 'display': 'inline-block'}
+                                style={'width': '30%', 'display': 'inline-block'}
+                                ), 
+                            html.Div(
+                                [dcc.Graph(
+                                style={'height': 300},
+                                id='twt-map'
+                                )]  ,
+                                style={'width': '40%', 'display': 'inline-block'}
                                 ), 
                             html.Div(
                                 [dcc.Graph(
@@ -78,6 +97,7 @@ def twt_layout(tw, topic):
                                         'height': 'auto'
                                     },
                                 style_as_list_view=True,
+                                style_table={'width': '1'},
                                 style_data_conditional=[
                                     {
                                         'if': {'row_index': 'odd'},

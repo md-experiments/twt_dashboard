@@ -13,6 +13,7 @@ __pycache__/
 
 # Data file
 data/
+log_store/
 
 #Environments
 env_twt_dash/

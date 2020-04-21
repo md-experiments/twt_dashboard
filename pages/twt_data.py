@@ -18,10 +18,17 @@ class Tweets():
         self.authors_limit=30
         self.authors_title='Nr Tweets by Author per Hashatag'
         
-
+        # TIMELINE table
         df_tim=pd.read_csv(f'{path}{pattern}_time.csv', index_col=0)
         df_tim['time']=df_tim.time.apply(lambda x: x[:5])
         self.df_tim=df_tim
+
+        # GEO table
+        geo_cols_rename={'id':'Tweets', 'term': 'Term'}
+        df_geo=pd.read_csv(f'{path}{pattern}_geo.csv', index_col=0)
+        df_geo=df_geo.rename(columns=geo_cols_rename)
+        #df_geo=df_geo[['term','id','Geolocation','lat','lon']].copy()
+        self.df_geo=df_geo      
 
         # BODY table
         self.txt_sort_col='Favs'
@@ -40,3 +47,22 @@ class Tweets():
 ai=Tweets()
 tea=Tweets(pattern='TEA')
 cof=Tweets(pattern='COFFEE')
+mind=Tweets(pattern='MINDSET')
+fert=Tweets(pattern='FERTILITY')
+food=Tweets(pattern='FOOD')
+
+def select_tw(title):
+    if title.startswith('#TEA'):
+        tw=tea
+    elif title.startswith('#COFFEE'):
+        tw=cof
+    elif title.startswith('#MINDSET'):
+        tw=mind
+    elif title.startswith('#FERTILITY'):
+        tw=fert
+    elif title.startswith('#FOOD'):
+        tw=food
+    else:
+        tw=ai
+
+    return tw
