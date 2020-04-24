@@ -1,13 +1,13 @@
 import pandas as pd
 
 class News():
-    def __init__(self,path='./data/',pattern='news_feb'):
+    def __init__(self,path='./data/',pattern='macro'):
         self.path=path
         self.pattern=pattern
         
         ##### TABLES PARAMS ##### 
         self.df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0)
-        self.selected_topics=[tpc.lower() for tpc in self.df_tpc.index.values]
+        self.selected_topics=[str(tpc).lower() for tpc in self.df_tpc.index.values]
         self.topic_title='Top Mentions in the News'
 
         # AUTHOR table
@@ -33,9 +33,19 @@ class News():
         df_txt=df_txt.rename(columns=txt_cols_rename)
 
         df_txt['Date']=df_txt.Date.apply(lambda x: x[:5])
-        df_txt['Content']=df_txt.Content.apply(lambda x: x[:250])
+        df_txt['Content']=df_txt.Content.apply(lambda x: str(x)[:250])
         df_txt['Hashtags_lower']=df_txt.ner_othr.apply(lambda x: [z.lower() for z in eval(x)])
         self.df_txt=df_txt
         self.cols_from_txt=['url','Publisher','Title','Content', 'Date', 'Companies']
 
-n=News()
+nws_m=News(pattern='macro')
+nws_c=News(pattern='company')
+
+
+def select_nws(title):
+    if title.upper().startswith('COMPANY'):
+        n=nws_c
+    elif title.upper().startswith('MACRO'):
+        n=nws_m
+
+    return n

@@ -10,21 +10,24 @@ from dash.dependencies import Input, Output
 import dash_table
 
 import pandas as pd
-from pages.news_data import n
 
-links=['AI','TEA','COFFEE']
-page_2_layout = html.Div([
-    html.H1('News Dashboard February 2020'),
-    html.Div(id='page-2-content'),
-    html.Br(),
-    dcc.Link(f'Go to #{links[0]}', href=f'/{links[0]}'),
-    html.Br(),
-    dcc.Link(f'Go to #{links[1]}', href=f'/{links[1]}'),
-    html.Br(),
-    dcc.Link(f'Go to #{links[2]}', href=f'/{links[2]}'),
-    html.Br(),   
-    dcc.Link('Go back to home', href='/'),
-    html.Div(id='dash-container',
+from pages.nav import card
+
+
+
+def news_layout(n, topic):
+    links=['MACRO','COMPANY']
+    titles=['Macro','Company']
+    pattern = 'News '
+    titles.pop(links.index(topic))
+    links.remove(topic)
+
+    return html.Div([
+                    html.H1(id='nws-h1',children=f'{topic} News Dashboard February 2020'),
+                    html.Div(id='page-2-content'),
+                    html.Br(),
+                    html.Div(card(links,titles, pattern), className='container-fluid'),
+                    html.Div(id='dash-container',
                         children=[
                             html.Div(
                                 [dcc.Graph(
@@ -63,7 +66,13 @@ page_2_layout = html.Div([
                                 ), 
                             html.H1('',''),
                             html.Div(
-                                [dash_table.DataTable(
+                                id='nws-table',
+                            )
+                        ]),
+])
+
+
+'''[dash_table.DataTable(
                                 id='nws-table',
                                 columns=[{"name": i, "id": i} for i in n.cols_from_txt],
                                 #fixed_rows={'headers': True},
@@ -83,7 +92,4 @@ page_2_layout = html.Div([
                                     'backgroundColor': 'rgb(230, 230, 230)',
                                     'fontWeight': 'bold'
                                 }
-                            )]
-                            )
-                        ]),
-])
+                            )]'''

@@ -1,9 +1,10 @@
 import pandas as pd
 
 class Tweets():
-    def __init__(self,path='./data/',pattern='AI'):
+    def __init__(self,path='./data/',pattern='AI', default_category='ai'):
         self.path=path
         self.pattern=pattern
+        self.default_category=default_category
         
         ##### TABLES PARAMS ##### 
         self.df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0)
@@ -14,7 +15,7 @@ class Tweets():
         # AUTHOR table
         self.df_aut=pd.read_csv(f'{path}{pattern}_authors.csv', index_col=0)
         self.col_entity='original_user' 
-        self.default_category='ai' 
+        
         self.authors_limit=30
         self.authors_title='Nr Tweets by Author per Hashatag'
         
@@ -45,11 +46,11 @@ class Tweets():
         self.cols_from_txt=['Author','Favs','RT','Content', 'Created At', 'Location']
 
 ai=Tweets()
-tea=Tweets(pattern='TEA')
-cof=Tweets(pattern='COFFEE')
-mind=Tweets(pattern='MINDSET')
-fert=Tweets(pattern='FERTILITY')
-food=Tweets(pattern='FOOD')
+tea=Tweets(pattern='TEA', default_category='tea')
+cof=Tweets(pattern='COFFEE', default_category='coffee')
+mind=Tweets(pattern='MINDSET', default_category='lifecoaching')
+fert=Tweets(pattern='FERTILITY', default_category='infertility')
+food=Tweets(pattern='FOOD', default_category='food')
 
 def select_tw(title):
     if title.startswith('#TEA'):

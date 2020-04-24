@@ -9,44 +9,56 @@ __author__ = 'CountingChickens'
 from dash import Dash
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import dash_table
 import plotly.express as px
 
 from flask import Flask, render_template, request, session, make_response
 
 import pandas as pd
-from pages.news_data import n
+from pages.news_data import nws_c, nws_m, select_nws
 from pages.twt_data import ai,cof,tea, fert, food, mind, select_tw
+from pages.index import index_page
+
+import dash_bootstrap_components as dbc
+from pages.nav import navbar
 
 print(dcc.__version__) # 0.6.0 or above is required
 
 #app = dash.Dash()
 app = Flask(__name__)  # '__main__'
 
+max_rows_table=50
 
-@app.route("/", methods=["GET"])
+import os 
+#dir_path = os.path.dirname(os.path.realpath(__file__))
+#os.chdir(dir_path)
+
+
+'''@app.route("/", methods=["GET"])
 def home():
-    return render_template("home.html")
+    return app_dash.layout'''
 
-external_stylesheets = [
-    dict(
+external_stylesheets = [dbc.themes.LITERA]
+'''[   dict(
         rel="stylesheet",
         href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" ,
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" ,
         crossorigin="anonymous"
     )
-]
+]'''
 
 app_dash = Dash(__name__,
                server=app,
-               url_base_pathname='/dashboards/',
+               url_base_pathname='/',
                external_stylesheets=external_stylesheets)
 
 app_dash.config.suppress_callback_exceptions = True
 
 app_dash.layout = html.Div([
+    #html.Link(rel="icon", href=os.path.join(os.getcwd(), "/assets/logo.png")),
     dcc.Location(id='url', refresh=True),
+    navbar,
     html.Div(id='page-content')
 ])
 app_dash.title = 'CountingChickens'
@@ -56,34 +68,50 @@ def MyDashApp():
     app_dash.title = "Title: %s"%(path)
     return app_dash.index()
 '''
+
+# add callback for toggling the collapse on small screens
+@app_dash.callback(
+    Output("navbar-collapse", "is_open"),
+    [Input("navbar-toggler", "n_clicks")],
+    [State("navbar-collapse", "is_open")],
+)
+def toggle_navbar_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+
 # Index Page callback
 @app_dash.callback(Output('page-content', 'children'),
               [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/dashboards/TEA':
-        app_dash.update_title = '#TEA | CountingChickens'
+        #app_dash.update_title = '#TEA | CountingChickens'
         return twt.twt_layout(tea,'TEA')
     elif pathname == '/dashboards/COFFEE':
-        app_dash.title = '#COFFEE | CountingChickens'
+        #app_dash.title = '#COFFEE | CountingChickens'
         return twt.twt_layout(cof,'COFFEE')
     elif pathname == '/dashboards/FERTILITY':
-        app_dash.title = '#FERTILITY | CountingChickens'
+        #app_dash.title = '#FERTILITY | CountingChickens'
         return twt.twt_layout(fert,'FERTILITY')
     elif pathname == '/dashboards/MINDSET':
-        app_dash.title = '#MINDSET | CountingChickens'
+        #app_dash.title = '#MINDSET | CountingChickens'
         return twt.twt_layout(mind,'MINDSET')
     elif pathname == '/dashboards/FOOD':
-        app_dash.title = '#FOOD | CountingChickens'
+        #app_dash.title = '#FOOD | CountingChickens'
         return twt.twt_layout(food,'FOOD')
     elif pathname == '/dashboards/AI':
-        app_dash.title = '#AI | CountingChickens'
+        #app_dash.title = '#AI | CountingChickens'
         return twt.twt_layout(ai,'AI')
-    elif pathname == '/dashboards/NEWS':
-        app_dash.title = 'News | CountingChickens'
-        return news.page_2_layout
+    elif pathname == '/dashboards/MACRO':
+        #app_dash.title = 'Macro News | CountingChickens'
+        return news.news_layout(nws_m,'MACRO')
+    elif pathname == '/dashboards/COMPANY':
+        #app_dash.title = 'Company News | CountingChickens'
+        return news.news_layout(nws_c,'COMPANY')
     else:
-        app_dash.title = 'Nest page | CountingChickens'
-        return render_template("home.html")
+        #app_dash.title = 'Nest page | CountingChickens'
+        return index_page(os.getcwd())
         '''index.index_page'''
 '''
 app.css.append_css({
@@ -92,14 +120,15 @@ app.css.append_css({
 '''
 
 @app_dash.callback(Output('nws-graph',  'figure'),
-              [Input('nws-bar-mentions-counts', 'clickData')])
-def update_figure(list_from_click):
+              [Input('nws-bar-mentions-counts', 'clickData'),Input('nws-h1', 'children')])
+def update_figure(list_from_click,title):
     '''
     if isinstance(list_of_stocks,str):
         list_of_stocks=[list_of_stocks]
     
     if list_from_click:
     '''
+    n=select_nws(title)
     
     if list_from_click:
         list_of_topics=[clk['x'] for clk in list_from_click['points']]
@@ -130,8 +159,9 @@ def update_figure(list_from_click):
     )
 
 @app_dash.callback(Output('nws-bar-authors-counts',  'figure'),
-              [Input('nws-bar-mentions-counts', 'clickData')])
-def update_bar_authors(list_from_click):
+              [Input('nws-bar-mentions-counts', 'clickData'),Input('nws-h1', 'children')])
+def update_bar_authors(list_from_click, title):
+    n=select_nws(title)
 
     if list_from_click:
         list_of_topics=[clk['x'] for clk in list_from_click['points']]
@@ -160,9 +190,10 @@ def update_bar_authors(list_from_click):
         )
 
 
-@app_dash.callback(Output('nws-table',  'data'),
-              [Input('nws-bar-mentions-counts', 'clickData')])
-def update_table(list_from_click):
+@app_dash.callback(Output('nws-table',  'children'),
+              [Input('nws-bar-mentions-counts', 'clickData'),Input('nws-h1', 'children')])
+def update_table(list_from_click,title):
+    n=select_nws(title)
 
     if list_from_click:
         list_of_stocks=[clk['x'].lower() for clk in list_from_click['points']]
@@ -174,7 +205,12 @@ def update_table(list_from_click):
     df_out=df_out[indicator].sort_values(n.sort_col, ascending=n.sort_ascending)
     df_out=df_out[n.cols_from_txt]
     
-    return df_out.to_dict('records')
+    df_out['#']=list(range(1,len(df_out)+1))
+    new_cols=list(df_out.columns)
+    new_cols.remove('#')
+    df_out=df_out[['#']+new_cols]
+    df_out=df_out.head(max_rows_table)
+    return dbc.Table.from_dataframe(df_out,striped=True, bordered=True, hover=True)
 
 
 @app_dash.callback(Output('twt-graph',  'figure'),
@@ -242,8 +278,9 @@ def update_bar_authors(list_from_click, title):
         )
 
 
-@app_dash.callback(Output('twt-table',  'data'),
-              [Input('twt-bar-mentions-counts', 'clickData'),Input('twt-h1', 'children')])
+'''@app_dash.callback(Output('twt-table',  'data'),'''
+@app_dash.callback(Output('twt-table',  'children'),
+      [Input('twt-bar-mentions-counts', 'clickData'),Input('twt-h1', 'children')])
 def update_table(list_from_click, title):
     tw=select_tw(title)
 
@@ -257,7 +294,13 @@ def update_table(list_from_click, title):
     df_out=df_out[indicator].sort_values(tw.txt_sort_col, ascending=tw.txt_sort_ascending)
     df_out=df_out[tw.cols_from_txt]
     
-    return df_out.to_dict('records')
+    '''return df_out.to_dict('records')'''
+    df_out['#']=list(range(1,len(df_out)+1))
+    new_cols=list(df_out.columns)
+    new_cols.remove('#')
+    df_out=df_out[['#']+new_cols]
+    df_out=df_out.head(max_rows_table)
+    return dbc.Table.from_dataframe(df_out,striped=True, bordered=True, hover=True, responsive=True)
 
 
 @app_dash.callback(Output('twt-map',  'figure'),
