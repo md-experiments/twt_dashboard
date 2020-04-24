@@ -1,10 +1,11 @@
 import pandas as pd
 
 class News():
-    def __init__(self,path='./data/',pattern='macro'):
+    def __init__(self,path='./data/',pattern='macro',default_category='us', lookup_column='ner_othr'):
         self.path=path
         self.pattern=pattern
-        
+        self.default_category=default_category #'ai' --> needs to be lowercase
+
         ##### TABLES PARAMS ##### 
         self.df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0)
         self.selected_topics=[str(tpc).lower() for tpc in self.df_tpc.index.values]
@@ -13,7 +14,7 @@ class News():
         # AUTHOR table
         self.df_aut=pd.read_csv(f'{path}{pattern}_authors.csv', index_col=0)
         self.col_entity='ner_company' #'original_user'
-        self.default_category='us' #'ai' --> needs to be lowercase
+
         self.authors_limit=30
         self.authors_title='Nr Articles by Company in topic'
         
@@ -34,12 +35,12 @@ class News():
 
         df_txt['Date']=df_txt.Date.apply(lambda x: x[:5])
         df_txt['Content']=df_txt.Content.apply(lambda x: str(x)[:250])
-        df_txt['Hashtags_lower']=df_txt.ner_othr.apply(lambda x: [z.lower() for z in eval(x)])
+        df_txt['Hashtags_lower']=df_txt[lookup_column].apply(lambda x: [z.lower() for z in eval(x)])
         self.df_txt=df_txt
         self.cols_from_txt=['url','Publisher','Title','Content', 'Date', 'Companies']
 
-nws_m=News(pattern='macro')
-nws_c=News(pattern='company')
+nws_m=News(pattern='macro', default_category='trump', lookup_column='ner_othr')
+nws_c=News(pattern='company', default_category='nyse', lookup_column='ner_org')
 
 
 def select_nws(title):

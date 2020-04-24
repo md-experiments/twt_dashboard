@@ -28,7 +28,7 @@ print(dcc.__version__) # 0.6.0 or above is required
 #app = dash.Dash()
 app = Flask(__name__)  # '__main__'
 
-max_rows_table=50
+max_rows_table=100
 
 import os 
 #dir_path = os.path.dirname(os.path.realpath(__file__))

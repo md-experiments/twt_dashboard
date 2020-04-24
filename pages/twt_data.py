@@ -40,7 +40,7 @@ class Tweets():
         df_txt=pd.read_csv(f'{path}{pattern}_body.csv', index_col=0)
         
         df_txt=df_txt.rename(columns=txt_cols_rename)
-        df_txt['Content']=df_txt.Content.apply(lambda x: x[:250])
+        df_txt['Content']=df_txt.Content.apply(lambda x: x)
         df_txt['Hashtags_lower']=df_txt.Hashtags.apply(lambda x: [z.lower() for z in eval(x)])
         self.df_txt=df_txt
         self.cols_from_txt=['Author','Favs','RT','Content', 'Created At', 'Location']
