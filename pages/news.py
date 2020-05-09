@@ -55,7 +55,14 @@ def news_layout(n, topic):
                                 style={'height': 300},
                                 id='nws-graph'
                                 )]  ,
-                                style={'width': '70%', 'display': 'inline-block'}
+                                style={'width': '30%', 'display': 'inline-block'}
+                                ), 
+                            html.Div(
+                                [dcc.Graph(
+                                style={'height': 300},
+                                id='nws-map'
+                                )]  ,
+                                style={'width': '40%', 'display': 'inline-block'}
                                 ), 
                             html.Div(
                                 [dcc.Graph(
@@ -64,6 +71,13 @@ def news_layout(n, topic):
                                 )]  ,
                                 style={'width': '30%', 'display': 'inline-block'}
                                 ), 
+                            html.H1('',''),
+                            html.Div([
+                                    dcc.Graph(
+                                        id='nws-kg',
+                                    )
+                                ]
+                            ),
                             html.H1('',''),
                             html.Div(
                                 id='nws-table',

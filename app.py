@@ -19,6 +19,10 @@ import pandas as pd
 from pages.news_data import nws_c, nws_m, select_nws
 from pages.twt_data import ai,cof,tea, fert, food, mind, select_tw
 from pages.index import index_page
+# You know, for Graph
+import networkx as nx
+from pages.graph import build_graph
+from pages.utils import FrameStacker
 
 import dash_bootstrap_components as dbc
 from pages.nav import navbar
@@ -327,6 +331,65 @@ def update_map(list_from_click, title):
     figure.update_layout(margin={"t":3,"b":6})
     return figure
 
+
+@app_dash.callback(Output('nws-map', 'figure'),
+              [Input('nws-bar-mentions-counts', 'clickData'),Input('nws-h1', 'children')])
+def update_map(list_from_click, title):
+    ns=select_nws(title)
+
+    if list_from_click:
+        list_of_stocks=[clk['x'].lower() for clk in list_from_click['points']]
+    else:
+        list_of_stocks=[ns.default_category]
+
+    selected_df=ns.df_geo[ns.df_geo.Term.isin(list_of_stocks)]
+
+    rng_min=selected_df.Mentions.min()
+    rng_max=selected_df.Mentions.max()
+    figure=px.density_mapbox(data_frame=selected_df,lat='lat', lon='lon', z='Mentions', radius=20,
+                            center = {"lat": 37.0902, "lon": -0.7129},zoom=0,
+                            hover_name="ent_loc", hover_data=["Mentions", "Term"],
+                            color_continuous_scale="Viridis",
+                            range_color=(rng_min, rng_max),
+                            mapbox_style="carto-positron")
+    #figure.update_layout(margin={"r":1,"t":1.5,"l":1,"b":0.5})
+    figure.update_layout(margin={"t":3,"b":6})
+    return figure
+
+@app_dash.callback(Output('nws-kg', 'figure'),
+              [Input('nws-bar-mentions-counts', 'clickData'),Input('nws-h1', 'children')])
+def update_kg(list_from_click, title):
+    ns=select_nws(title)
+
+    if list_from_click:
+        list_of_stocks=[clk['x'].lower() for clk in list_from_click['points']]
+    else:
+        list_of_stocks=[ns.default_category]
+
+    df_out=ns.df_grph.copy()
+    indicator=ns.df_grph['Hashtags_lower'].apply(lambda x: len(set(x) & set(list_of_stocks))>0).values
+    relevant_kgs=list(df_out[indicator].graph.values)
+    
+    fs=FrameStacker()
+
+    '''
+    random_layout
+    shell_layout
+    spring_layout
+    spectral_layout
+    '''
+    if len(relevant_kgs)>0:
+        for kg in relevant_kgs:
+            k=pd.read_json(kg)
+            fs.append(k)
+        kg_df=fs.stack()
+    else:
+        txt_kg='{"source":{"0":"Nothing"},"edge":{"0":"to"},"target":{"0":"show ..."}}'
+        kg_df=pd.read_json(txt_kg)
+
+    figure=build_graph(kg_df,nx.shell_layout)
+
+    return figure
 #if __name__ == '__main__':
 #    app.run_server(host='0.0.0.0',debug=True)
 
