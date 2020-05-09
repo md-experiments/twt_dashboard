@@ -50,16 +50,17 @@ class News():
         df_txt['Tickers']=df_txt.Tickers.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
         df_txt['Hashtags_lower']=df_txt[lookup_column].apply(lambda x: [z.lower() for z in eval(x)])
         self.df_txt=df_txt
-        self.cols_from_txt=['url','Publisher','Title','Content', 'Date', 'Entities', 'Tickers']
+        self.cols_from_txt=['Publisher','Title','Content', 'Date', 'Entities', 'Tickers']
 
-nws_m=News(pattern='macro', default_category='trump', lookup_column='ent_othr')
-nws_c=News(pattern='company', default_category='nyse', lookup_column='ent_org')
+#nws_m=News(pattern='macro', default_category='trump', lookup_column='ent_othr')
+#nws_c=News(pattern='company', default_category='nyse', lookup_column='ent_org')
 
 
 def select_nws(title):
     if title.upper().startswith('COMPANY'):
-        n=nws_c
+        #n=nws_c
+        n=News(pattern='company', default_category='nyse', lookup_column='ent_org')
     elif title.upper().startswith('MACRO'):
-        n=nws_m
-
+        #n=nws_m
+        n=News(pattern='macro', default_category='trump', lookup_column='ent_othr')
     return n

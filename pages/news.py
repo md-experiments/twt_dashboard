@@ -12,6 +12,7 @@ import dash_table
 import pandas as pd
 
 from pages.nav import card
+from pages.news_data import select_nws
 
 
 
@@ -21,7 +22,7 @@ def news_layout(n, topic):
     pattern = 'News '
     titles.pop(links.index(topic))
     links.remove(topic)
-
+    n=select_nws(topic.upper())
     return html.Div([
                     html.H1(id='nws-h1',children=f'{topic} News Dashboard February 2020'),
                     html.Div(id='page-2-content'),

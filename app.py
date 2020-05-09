@@ -16,7 +16,7 @@ import plotly.express as px
 from flask import Flask, render_template, request, session, make_response
 
 import pandas as pd
-from pages.news_data import nws_c, nws_m, select_nws
+from pages.news_data import select_nws
 from pages.twt_data import ai,cof,tea, fert, food, mind, select_tw
 from pages.index import index_page
 # You know, for Graph
@@ -109,10 +109,10 @@ def display_page(pathname):
         return twt.twt_layout(ai,'AI')
     elif pathname == '/dashboards/MACRO':
         #app_dash.title = 'Macro News | CountingChickens'
-        return news.news_layout(nws_m,'MACRO')
+        return news.news_layout('','MACRO')
     elif pathname == '/dashboards/COMPANY':
         #app_dash.title = 'Company News | CountingChickens'
-        return news.news_layout(nws_c,'COMPANY')
+        return news.news_layout('','COMPANY')
     else:
         #app_dash.title = 'Nest page | CountingChickens'
         return index_page(os.getcwd())
@@ -387,7 +387,7 @@ def update_kg(list_from_click, title):
         txt_kg='{"source":{"0":"Nothing"},"edge":{"0":"to"},"target":{"0":"show ..."}}'
         kg_df=pd.read_json(txt_kg)
 
-    figure=build_graph(kg_df,nx.shell_layout)
+    figure=build_graph(kg_df,nx.spring_layout)
 
     return figure
 #if __name__ == '__main__':
