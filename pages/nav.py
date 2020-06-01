@@ -8,6 +8,9 @@ import os
 links=['TEA','COFFEE','FOOD','FERTILITY','MINDSET','AI']
 titles=['Tea','Coffee','Food','Fertility','LifeCoach','AI']
 
+links_st=['SPX','NASDAQ100','TSX','STOXX600','ASX','IBOV']
+titles_st=['SPX','NASDAQ100','TSX','STOXX600','ASX','IBOV']
+
 navbar = dbc.Navbar(
     [
         html.A(
@@ -27,7 +30,9 @@ navbar = dbc.Navbar(
         [dbc.DropdownMenu(
             children=
                 [dbc.DropdownMenuItem("Twitter", header=True),]+
-                [dbc.DropdownMenuItem(f"#{title}", href=f"/dashboards/{link}", external_link=True) for link,title in zip(links,titles)]
+                [dbc.DropdownMenuItem(f"#{title}", href=f"/dashboards/{link}", external_link=True) for link,title in zip(links,titles)]+
+                [dbc.DropdownMenuItem("Sentiment", header=True),]+
+                [dbc.DropdownMenuItem(f"#{title}", href=f"/dashboards/{link}", external_link=True) for link,title in zip(links_st,titles_st)]
                 ,
             nav=True,
             in_navbar=True,

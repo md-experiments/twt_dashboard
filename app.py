@@ -1,5 +1,5 @@
 import dash
-from pages import index, news, twt
+from pages import index, news, twt, stk_twt
 
 
 import sys
@@ -113,6 +113,24 @@ def display_page(pathname):
     elif pathname == '/dashboards/COMPANY':
         #app_dash.title = 'Company News | CountingChickens'
         return news.news_layout('','COMPANY')
+    elif pathname == '/dashboards/SPX':
+        #app_dash.title = 'Company News | CountingChickens'
+        return stk_twt.stk_twt_layout('','SPX')
+    elif pathname == '/dashboards/NASDAQ100':
+        #app_dash.title = 'Company News | CountingChickens'
+        return stk_twt.stk_twt_layout('','NASDAQ100')
+    elif pathname == '/dashboards/TSX':
+        #app_dash.title = 'Company News | CountingChickens'
+        return stk_twt.stk_twt_layout('','TSX')
+    elif pathname == '/dashboards/STOXX600':
+        #app_dash.title = 'Company News | CountingChickens'
+        return stk_twt.stk_twt_layout('','stoxx600')
+    elif pathname == '/dashboards/ASX':
+        #app_dash.title = 'Company News | CountingChickens'
+        return stk_twt.stk_twt_layout('','ASX')
+    elif pathname == '/dashboards/IBOV':
+        #app_dash.title = 'Company News | CountingChickens'
+        return stk_twt.stk_twt_layout('','IBOV')
     else:
         #app_dash.title = 'Nest page | CountingChickens'
         return index_page(os.getcwd())
@@ -348,7 +366,7 @@ def update_map(list_from_click, title):
     rng_max=selected_df.Mentions.max()
     figure=px.density_mapbox(data_frame=selected_df,lat='lat', lon='lon', z='Mentions', radius=20,
                             center = {"lat": 37.0902, "lon": -0.7129},zoom=0,
-                            hover_name="ent_loc", hover_data=["Mentions", "Term"],
+                            hover_name="location", hover_data=["Mentions", "Term"],
                             color_continuous_scale="Viridis",
                             range_color=(rng_min, rng_max),
                             mapbox_style="carto-positron")
