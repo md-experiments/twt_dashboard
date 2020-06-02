@@ -57,58 +57,61 @@ class News():
 
 class StockTwt():
     def __init__(self,path='./data/',pattern='macro',lookup_column='ner_othr', nr_topics=50):
-        self.path=path
-        self.pattern=pattern
-        
-        ##### TABLES PARAMS ##### 
-        self.nr_topics=nr_topics
-        df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0)
-        df_tpc=df_tpc.head(self.nr_topics).copy()
-        self.df_tpc=df_tpc
-        self.selected_topics=[str(tpc).lower() for tpc in self.df_tpc.index.values]
-        self.topic_title='Top Twitter Mentions 48hrs rolling'
-        self.default_category=str(self.df_tpc.index[0]).lower() #'ai' --> needs to be lowercase
+        try:
+            self.path=path
+            self.pattern=pattern
+            
+            ##### TABLES PARAMS ##### 
+            self.nr_topics=nr_topics
+            df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0)
+            df_tpc=df_tpc.head(self.nr_topics).copy()
+            self.df_tpc=df_tpc
+            self.selected_topics=[str(tpc).lower() for tpc in self.df_tpc.index.values]
+            self.topic_title='Top Twitter Mentions 48hrs rolling'
+            self.default_category=str(self.df_tpc.index[0]).lower() #'ai' --> needs to be lowercase
 
-        # AUTHOR table
-        self.df_aut=pd.read_csv(f'{path}{pattern}_authors.csv', index_col=0)
-        self.col_entity='hashtags' #'original_user'
+            # AUTHOR table
+            self.df_aut=pd.read_csv(f'{path}{pattern}_authors.csv', index_col=0)
+            self.col_entity='hashtags' #'original_user'
 
-        self.authors_limit=30
-        self.authors_title='Nr Articles by entities within the topic'
-        
+            self.authors_limit=30
+            self.authors_title='Nr Articles by entities within the topic'
+            
 
-        df_tim=pd.read_csv(f'{path}{pattern}_time.csv', index_col=0)
-        df_tim['time']=df_tim.time.apply(lambda x: x)
-        self.df_tim=df_tim
+            df_tim=pd.read_csv(f'{path}{pattern}_time.csv', index_col=0)
+            df_tim['time']=df_tim.time.apply(lambda x: x)
+            self.df_tim=df_tim
 
-        # GEO table
-        geo_cols_rename={'id':'Mentions', 'term': 'Term'}
-        df_geo=pd.read_csv(f'{path}{pattern}_geo.csv', index_col=0)
-        df_geo=df_geo.rename(columns=geo_cols_rename)
-        #df_geo=df_geo[['term','id','Geolocation','lat','lon']].copy()
-        self.df_geo=df_geo   
+            # GEO table
+            geo_cols_rename={'id':'Mentions', 'term': 'Term'}
+            df_geo=pd.read_csv(f'{path}{pattern}_geo.csv', index_col=0)
+            df_geo=df_geo.rename(columns=geo_cols_rename)
+            #df_geo=df_geo[['term','id','Geolocation','lat','lon']].copy()
+            self.df_geo=df_geo   
 
-        #Knowledge Graph
-        #df_grph=pd.read_csv(f'{path}{pattern}_graph.csv', index_col=0)
-        #df_grph['Hashtags_lower']=df_grph['ent_graph'].apply(lambda x: [z.lower() for z in eval(x)])
-        #self.df_grph=df_grph  
+            #Knowledge Graph
+            #df_grph=pd.read_csv(f'{path}{pattern}_graph.csv', index_col=0)
+            #df_grph['Hashtags_lower']=df_grph['ent_graph'].apply(lambda x: [z.lower() for z in eval(x)])
+            #self.df_grph=df_grph  
 
-        # BODY table
-        self.sort_col='Favs'
-        self.sort_ascending=False
-        txt_cols_rename={'favorite_count': 'Favs','retweet_count': 'RT', 'created': 'Created', 'location': 'Location',
-                         'user': 'Author', 'full_text': 'Content'}
+            # BODY table
+            self.sort_col='Favs'
+            self.sort_ascending=False
+            txt_cols_rename={'favorite_count': 'Favs','retweet_count': 'RT', 'created': 'Created', 'location': 'Location',
+                            'user': 'Author', 'full_text': 'Content'}
 
-        df_txt=pd.read_csv(f'{path}{pattern}_body.csv', index_col=0).fillna('')
-        df_txt=df_txt.rename(columns=txt_cols_rename)
+            df_txt=pd.read_csv(f'{path}{pattern}_body.csv', index_col=0).fillna('')
+            df_txt=df_txt.rename(columns=txt_cols_rename)
 
-        df_txt['Created']=df_txt.Created.apply(lambda x: str(x))
-        df_txt['Content']=df_txt.Content.apply(lambda x: str(x).replace('amp;',''))
-        #df_txt['Entities']=df_txt.Entities.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
-        #df_txt['Tickers']=df_txt.Tickers.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
-        df_txt['Hashtags_lower']=df_txt[lookup_column].apply(lambda x: [z.lower() for z in eval(x)])
-        self.df_txt=df_txt
-        self.cols_from_txt=['Author','Favs','RT','Content', 'Created', 'Location']
+            df_txt['Created']=df_txt.Created.apply(lambda x: str(x))
+            df_txt['Content']=df_txt.Content.apply(lambda x: str(x).replace('amp;',''))
+            #df_txt['Entities']=df_txt.Entities.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
+            #df_txt['Tickers']=df_txt.Tickers.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
+            df_txt['Hashtags_lower']=df_txt[lookup_column].apply(lambda x: [z.lower() for z in eval(x)])
+            self.df_txt=df_txt
+            self.cols_from_txt=['Author','Favs','RT','Content', 'Created', 'Location']
+        except:
+            self.df_tpc=pd.DataFrame([])
 
 #nws_m=News(pattern='macro', default_category='trump', lookup_column='ent_othr')
 #nws_c=News(pattern='company', default_category='nyse', lookup_column='ent_org')

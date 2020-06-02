@@ -27,74 +27,84 @@ def stk_twt_layout(n, topic):
     links.remove(topic)
     n=select_nws(topic.upper())
 
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
-    fig.add_trace(
-            go.Bar(x=list(n.df_tpc.index.values), y=list(n.df_tpc.Mentions.values), name='Nr Tweets (lhs)',alignmentgroup='b', base="stack"),
-            secondary_y=False,
+    if len(n.df_tpc)==0:
+        return html.Div([
+                        html.H1(id='nws-h1',children=f'{topic} Social Sentiment 48hrs rolling'),
+                        html.Div(id='page-2-content'),
+                        html.Br(),
+                        html.Div(card(links,titles, pattern), className='container-fluid'),
+        ]
         )
 
-    fig.add_trace(
-        go.Bar(x=list(n.df_tpc.index.values), y=list(n.df_tpc.Score.clip(-10,0).values), name="Net Sentiment",alignmentgroup='a', base="stack",showlegend=False),
-        secondary_y=True,
-    )
-    fig.add_trace(
-        go.Bar(x=list(n.df_tpc.index.values), y=list(n.df_tpc.Score.clip(0,10).values),alignmentgroup='a', base="stack",showlegend=False),
-        secondary_y=True,
-    )
-    fig.update_layout(
-        barmode='stack',
-        title_text=n.topic_title,
-        showlegend=True,
-        legend=dict(
-                x=0,
-                y=1.0
-            ),
-        yaxis=dict(title='Nr Tweets', side='left'),
-        yaxis2=dict(title='Net Sentiment',
-                    side='right', range=[-1, 1]),
-        template='plotly_white',
-        margin=dict(l=40, r=40, t=40, b=80)
-    )
+    else:    
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig.add_trace(
+                go.Bar(x=list(n.df_tpc.index.values), y=list(n.df_tpc.Mentions.values), name='Nr Tweets (lhs)',alignmentgroup='b', base="stack"),
+                secondary_y=False,
+            )
 
-    return html.Div([
-                    html.H1(id='nws-h1',children=f'{topic} Social Sentiment 48hrs rolling'),
-                    html.Div(id='page-2-content'),
-                    html.Br(),
-                    html.Div(card(links,titles, pattern), className='container-fluid'),
-                    html.Div(id='dash-container',
-                        children=[
-                            html.Div(
-                                [dcc.Graph(
-                                style={'height': 300},
-                                id='nws-bar-mentions-counts',
-                                figure=fig
-                                )]  ,
-                                #style={'width': '25%', 'display': 'inline-block'}
-                                ), 
-                            html.Div(
-                                [dcc.Graph(
-                                style={'height': 300},
-                                id='nws-graph'
-                                )]  ,
-                                style={'width': '30%', 'display': 'inline-block'}
-                                ), 
-                            html.Div(
-                                [dcc.Graph(
-                                style={'height': 300},
-                                id='nws-map'
-                                )]  ,
-                                style={'width': '40%', 'display': 'inline-block'}
-                                ), 
-                            html.Div(
-                                [dcc.Graph(
-                                style={'height': 300},
-                                id='nws-bar-authors-counts',
-                                )]  ,
-                                style={'width': '30%', 'display': 'inline-block'}
-                                ), 
-                            html.H1('',''),
-                            html.Div(
-                                id='nws-table',
-                            )
-                        ]),
-])
+        fig.add_trace(
+            go.Bar(x=list(n.df_tpc.index.values), y=list(n.df_tpc.Score.clip(-10,0).values), name="Net Sentiment",alignmentgroup='a', base="stack",showlegend=False),
+            secondary_y=True,
+        )
+        fig.add_trace(
+            go.Bar(x=list(n.df_tpc.index.values), y=list(n.df_tpc.Score.clip(0,10).values),alignmentgroup='a', base="stack",showlegend=False),
+            secondary_y=True,
+        )
+        fig.update_layout(
+            barmode='stack',
+            title_text=n.topic_title,
+            showlegend=True,
+            legend=dict(
+                    x=0,
+                    y=1.0
+                ),
+            yaxis=dict(title='Nr Tweets', side='left'),
+            yaxis2=dict(title='Net Sentiment',
+                        side='right', range=[-1, 1]),
+            template='plotly_white',
+            margin=dict(l=40, r=40, t=40, b=80)
+        )
+
+        return html.Div([
+                        html.H1(id='nws-h1',children=f'{topic} Social Sentiment 48hrs rolling'),
+                        html.Div(id='page-2-content'),
+                        html.Br(),
+                        html.Div(card(links,titles, pattern), className='container-fluid'),
+                        html.Div(id='dash-container',
+                            children=[
+                                html.Div(
+                                    [dcc.Graph(
+                                    style={'height': 300},
+                                    id='nws-bar-mentions-counts',
+                                    figure=fig
+                                    )]  ,
+                                    #style={'width': '25%', 'display': 'inline-block'}
+                                    ), 
+                                html.Div(
+                                    [dcc.Graph(
+                                    style={'height': 300},
+                                    id='nws-graph'
+                                    )]  ,
+                                    style={'width': '30%', 'display': 'inline-block'}
+                                    ), 
+                                html.Div(
+                                    [dcc.Graph(
+                                    style={'height': 300},
+                                    id='nws-map'
+                                    )]  ,
+                                    style={'width': '40%', 'display': 'inline-block'}
+                                    ), 
+                                html.Div(
+                                    [dcc.Graph(
+                                    style={'height': 300},
+                                    id='nws-bar-authors-counts',
+                                    )]  ,
+                                    style={'width': '30%', 'display': 'inline-block'}
+                                    ), 
+                                html.H1('',''),
+                                html.Div(
+                                    id='nws-table',
+                                )
+                            ]),
+                        ])
