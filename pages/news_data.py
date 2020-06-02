@@ -56,15 +56,18 @@ class News():
 #nws_c=News(pattern='company', default_category='nyse', lookup_column='ent_org')
 
 class StockTwt():
-    def __init__(self,path='./data/',pattern='macro',default_category='us', lookup_column='ner_othr'):
+    def __init__(self,path='./data/',pattern='macro',lookup_column='ner_othr', nr_topics=50):
         self.path=path
         self.pattern=pattern
-        self.default_category=default_category #'ai' --> needs to be lowercase
-
+        
         ##### TABLES PARAMS ##### 
-        self.df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0)
+        self.nr_topics=nr_topics
+        df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0)
+        df_tpc=df_tpc.head(self.nr_topics).copy()
+        self.df_tpc=df_tpc
         self.selected_topics=[str(tpc).lower() for tpc in self.df_tpc.index.values]
         self.topic_title='Top Twitter Mentions 48hrs rolling'
+        self.default_category=str(self.df_tpc.index[0]).lower() #'ai' --> needs to be lowercase
 
         # AUTHOR table
         self.df_aut=pd.read_csv(f'{path}{pattern}_authors.csv', index_col=0)
@@ -119,20 +122,20 @@ def select_nws(title):
         n=News(pattern='macro', default_category='trump', lookup_column='ent_othr')
     elif title.upper().startswith('NASDAQ100'):
         #n=nws_c
-        n=StockTwt(pattern='NASDAQ100', default_category='tsla', lookup_column='matched_symbols')
+        n=StockTwt(pattern='NASDAQ100', lookup_column='matched_symbols')
     elif title.upper().startswith('SPX'):
         #n=nws_m
-        n=StockTwt(pattern='SPX', default_category='amzn', lookup_column='matched_symbols')
+        n=StockTwt(pattern='SPX', lookup_column='matched_symbols')
     elif title.upper().startswith('TSX'):
         #n=nws_m
-        n=StockTwt(pattern='TSX', default_category='vet', lookup_column='matched_symbols')
+        n=StockTwt(pattern='TSX', lookup_column='matched_symbols')
     elif title.upper().startswith('ASX'):
         #n=nws_c
-        n=StockTwt(pattern='ASX', default_category='tsla', lookup_column='matched_symbols')
+        n=StockTwt(pattern='ASX', lookup_column='matched_symbols')
     elif title.upper().startswith('STOXX600'):
         #n=nws_m
-        n=StockTwt(pattern='stoxx600', default_category='amzn', lookup_column='matched_symbols')
+        n=StockTwt(pattern='stoxx600', lookup_column='matched_symbols')
     elif title.upper().startswith('IBOV'):
         #n=nws_m
-        n=StockTwt(pattern='IBOV', default_category='vet', lookup_column='matched_symbols')
+        n=StockTwt(pattern='IBOV', lookup_column='matched_symbols')
     return n
