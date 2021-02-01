@@ -141,7 +141,7 @@ def select_nws(title):
         #n=nws_m
         caveats='''__Caveats:__ SPX is a ticker from STOXX600, however, here this is mostly in reference to S&P500'''
         n=StockTwt(pattern='STOXX600', lookup_column='matched_symbols', caveats=caveats)
-    elif title.upper().startswith('IBOV'):
+    elif title.upper().startswith('FTSE100'):
         #n=nws_m
-        n=StockTwt(pattern='IBOV', lookup_column='matched_symbols')
+        n=StockTwt(pattern='FTSE100', lookup_column='matched_symbols')
     return n
