@@ -20,8 +20,8 @@ from pages.news_data import select_nws
 
 
 def stk_twt_layout(n, topic):
-    links=['SPX','NASDAQ100','TSX','stoxx600','ASX','IBOV']
-    titles=['SPX','NASDAQ100','TSX','STOXX600','ASX','IBOV']
+    links=['SPX','NASDAQ100','TSX','stoxx600','ASX','FTSE100']
+    titles=['SPX','NASDAQ100','TSX','STOXX600','ASX','FTSE100']
     pattern = 'Sentiment '
     titles.pop(links.index(topic))
     links.remove(topic)

@@ -128,9 +128,9 @@ def display_page(pathname):
     elif pathname == '/dashboards/ASX':
         #app_dash.title = 'Company News | CountingChickens'
         return stk_twt.stk_twt_layout('','ASX')
-    elif pathname == '/dashboards/IBOV':
+    elif pathname == '/dashboards/FTSE100':
         #app_dash.title = 'Company News | CountingChickens'
-        return stk_twt.stk_twt_layout('','IBOV')
+        return stk_twt.stk_twt_layout('','FTSE100')
     else:
         #app_dash.title = 'Nest page | CountingChickens'
         return index_page(os.getcwd())
