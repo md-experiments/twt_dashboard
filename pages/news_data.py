@@ -56,11 +56,12 @@ class News():
 #nws_c=News(pattern='company', default_category='nyse', lookup_column='ent_org')
 
 class StockTwt():
-    def __init__(self,path='./data/',pattern='macro',lookup_column='ner_othr', nr_topics=50):
+    def __init__(self,path='./data/',pattern='macro',lookup_column='ner_othr', nr_topics=50, caveats=''):
         try:
             self.path=path
             self.pattern=pattern
-            
+            self.caveats=caveats
+
             ##### TABLES PARAMS ##### 
             self.nr_topics=nr_topics
             df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0)
@@ -98,7 +99,7 @@ class StockTwt():
             self.sort_col='Favs'
             self.sort_ascending=False
             txt_cols_rename={'favorite_count': 'Favs','retweet_count': 'RT', 'created': 'Created', 'location': 'Location',
-                            'user': 'Author', 'full_text': 'Content'}
+                            'user': 'Author', 'full_text': 'Content', 'sentiment': 'Sentiment'}
 
             df_txt=pd.read_csv(f'{path}{pattern}_body.csv', index_col=0).fillna('')
             df_txt=df_txt.rename(columns=txt_cols_rename)
@@ -109,7 +110,7 @@ class StockTwt():
             #df_txt['Tickers']=df_txt.Tickers.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
             df_txt['Hashtags_lower']=df_txt[lookup_column].apply(lambda x: [z.lower() for z in eval(x)])
             self.df_txt=df_txt
-            self.cols_from_txt=['Author','Favs','RT','Content', 'Created', 'Location']
+            self.cols_from_txt=['Author','Favs','RT','Content', 'Created', 'Location', 'Sentiment']
         except:
             self.df_tpc=pd.DataFrame([])
 
@@ -125,7 +126,8 @@ def select_nws(title):
         n=News(pattern='macro', default_category='trump', lookup_column='ent_othr')
     elif title.upper().startswith('NASDAQ100'):
         #n=nws_c
-        n=StockTwt(pattern='NASDAQ100', lookup_column='matched_symbols')
+        caveats='''__Caveats:__ NASDAQ run follows the S&P500 run, hence companies present in both will appear mostly on S&P 500 page'''
+        n=StockTwt(pattern='NASDAQ100', lookup_column='matched_symbols',caveats=caveats)
     elif title.upper().startswith('SPX'):
         #n=nws_m
         n=StockTwt(pattern='SPX', lookup_column='matched_symbols')
@@ -137,7 +139,8 @@ def select_nws(title):
         n=StockTwt(pattern='ASX', lookup_column='matched_symbols')
     elif title.upper().startswith('STOXX600'):
         #n=nws_m
-        n=StockTwt(pattern='stoxx600', lookup_column='matched_symbols')
+        caveats='''__Caveats:__ SPX is a ticker from STOXX600, however, here this is mostly in reference to S&P500'''
+        n=StockTwt(pattern='STOXX600', lookup_column='matched_symbols', caveats=caveats)
     elif title.upper().startswith('IBOV'):
         #n=nws_m
         n=StockTwt(pattern='IBOV', lookup_column='matched_symbols')

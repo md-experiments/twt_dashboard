@@ -81,6 +81,7 @@ def stk_twt_layout(n, topic):
                                     )]  ,
                                     #style={'width': '25%', 'display': 'inline-block'}
                                     ), 
+                                dcc.Markdown(n.caveats), 
                                 html.Div(
                                     [dcc.Graph(
                                     style={'height': 300},
