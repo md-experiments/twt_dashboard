@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     rpt_type='twt'
     ls_aggs=['topics','authors','time','geo','body']
-    reports=['SPX','NASDAQ100','TSX','stoxx600','ASX','IBOV']
+    reports=['SPX','NASDAQ100','TSX','stoxx600','ASX','FTSE100']
 
     for report in reports:
         len_files=es.get(index=f'{rpt_type}-aggs-latest--rpts-length',id=report)['_source']

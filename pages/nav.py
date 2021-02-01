@@ -8,8 +8,8 @@ import os
 links=['TEA','COFFEE','FOOD','FERTILITY','MINDSET','AI']
 titles=['Tea','Coffee','Food','Fertility','LifeCoach','AI']
 
-links_st=['SPX','NASDAQ100','TSX','STOXX600','ASX','IBOV']
-titles_st=['SPX','NASDAQ100','TSX','STOXX600','ASX','IBOV']
+links_st=['SPX','NASDAQ100','TSX','STOXX600','ASX','FTSE100']
+titles_st=['SPX','NASDAQ100','TSX','STOXX600','ASX','FTSE100']
 
 navbar = dbc.Navbar(
     [
