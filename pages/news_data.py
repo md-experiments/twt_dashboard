@@ -137,8 +137,8 @@ def select_nws(title):
         n=StockTwt(pattern='ASX', lookup_column='matched_symbols')
     elif title.upper().startswith('STOXX600'):
         #n=nws_m
-        n=StockTwt(pattern='stoxx600', lookup_column='matched_symbols')
-    elif title.upper().startswith('FTSE100'):
+        n=StockTwt(pattern='STOXX600', lookup_column='matched_symbols')
+    elif title.upper().startswith('IBOV'):
         #n=nws_m
-        n=StockTwt(pattern='FTSE100', lookup_column='matched_symbols')
+        n=StockTwt(pattern='IBOV', lookup_column='matched_symbols')
     return n
