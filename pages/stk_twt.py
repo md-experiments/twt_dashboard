@@ -50,11 +50,11 @@ def stk_twt_layout(n, topic):
             pos_bar_vals = list(n.df_tpc.Score.clip(0,10).values)
 
         fig.add_trace(
-            go.Bar(x=list(n.df_tpc.index.values), y=neg_bar_vals, alignmentgroup='a', base="stack",showlegend=False),
+            go.Bar(x=list(n.df_tpc.index.values), y=neg_bar_vals, alignmentgroup='a', base="stack",showlegend=False, width=0.5),
             secondary_y=True,
         )
         fig.add_trace(
-            go.Bar(x=list(n.df_tpc.index.values), y=pos_bar_vals, name="Sentiment",alignmentgroup='a', base="stack",showlegend=False),
+            go.Bar(x=list(n.df_tpc.index.values), y=pos_bar_vals, name="Sentiment",alignmentgroup='a', base="stack",showlegend=False, width=0.5),
             secondary_y=True,
         )
 
