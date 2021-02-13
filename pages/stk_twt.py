@@ -68,7 +68,7 @@ def stk_twt_layout(n, topic):
                 ),
             yaxis=dict(title='Nr Tweets', side='left'),
             yaxis2=dict(title='Net Sentiment',
-                        side='right'),
+                        side='right', range=[-1, 1]),
             template='plotly_white',
             margin=dict(l=40, r=40, t=40, b=80)
         )
