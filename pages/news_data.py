@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 class News():
     def __init__(self,path='./data/',pattern='macro',default_category='us', lookup_column='ner_othr'):
@@ -7,49 +8,65 @@ class News():
         self.default_category=default_category #'ai' --> needs to be lowercase
 
         ##### TABLES PARAMS ##### 
-        self.df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0)
+        if os.path.exists(f'{path}{pattern}_topics.csv'):
+            self.df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0, lineterminator='\n')
+        else:
+            self.df_tpc = pd.DataFrame([],columns=[])   
         self.selected_topics=[str(tpc).lower() for tpc in self.df_tpc.index.values]
         self.topic_title='Top Mentions in the News'
 
         # AUTHOR table
-        self.df_aut=pd.read_csv(f'{path}{pattern}_authors.csv', index_col=0)
+        if os.path.exists(f'{path}{pattern}_authors.csv'):
+            self.df_aut=pd.read_csv(f'{path}{pattern}_authors.csv', index_col=0, lineterminator='\n')
+        else:
+            self.df_aut=pd.DataFrame([],columns=[])
         self.col_entity='ent_name' #'original_user'
 
         self.authors_limit=30
         self.authors_title='Nr Articles by entities within the topic'
         
-
-        df_tim=pd.read_csv(f'{path}{pattern}_time.csv', index_col=0)
-        df_tim['time']=df_tim.time.apply(lambda x: x)
-        self.df_tim=df_tim
+        # TIMELINE table
+        if os.path.exists(f'{path}{pattern}_time.csv'):
+            df_tim=pd.read_csv(f'{path}{pattern}_time.csv', index_col=0, lineterminator='\n')
+            df_tim['time']=df_tim.time.apply(lambda x: x)
+            self.df_tim=df_tim
+        else:
+            self.df_tim=pd.DataFrame([],columns=[])
 
         # GEO table
-        geo_cols_rename={'id':'Mentions', 'term': 'Term', 'ent_loc': 'location'}
-        df_geo=pd.read_csv(f'{path}{pattern}_geo.csv', index_col=0)
-        df_geo=df_geo.rename(columns=geo_cols_rename)
-        #df_geo=df_geo[['term','id','Geolocation','lat','lon']].copy()
-        self.df_geo=df_geo   
+        if os.path.exists(f'{path}{pattern}_geo.csv'):
+            geo_cols_rename={'id':'Mentions', 'term': 'Term', 'ent_loc': 'location'}
+            df_geo=pd.read_csv(f'{path}{pattern}_geo.csv', index_col=0, lineterminator='\n')
+            df_geo=df_geo.rename(columns=geo_cols_rename)
+            #df_geo=df_geo[['term','id','Geolocation','lat','lon']].copy()
+            self.df_geo=df_geo      
+        else:
+            self.df_geo=pd.DataFrame([],columns=[])
 
         #Knowledge Graph
-        df_grph=pd.read_csv(f'{path}{pattern}_graph.csv', index_col=0)
-        df_grph['Hashtags_lower']=df_grph['ent_graph'].apply(lambda x: [z.lower() for z in eval(x)])
-        self.df_grph=df_grph  
-
+        if os.path.exists(f'{path}{pattern}_graph.csv'):
+            df_grph=pd.read_csv(f'{path}{pattern}_graph.csv', index_col=0, lineterminator='\n')
+            df_grph['Hashtags_lower']=df_grph['ent_graph'].apply(lambda x: [z.lower() for z in eval(x)])
+            self.df_grph=df_grph  
+        else:
+            self.df_grph=pd.DataFrame([],columns=[])
         # BODY table
         self.sort_col='Date' # 'Favs'
         self.sort_ascending=False
         txt_cols_rename={'publisher': 'Publisher','date_utc': 'Date',
                             'title':'Title', 'ent_name': 'Entities', 'body': 'Content', 'tickers_ls': 'Tickers'}
+        if os.path.exists(f'{path}{pattern}_body.csv'):
+            df_txt=pd.read_csv(f'{path}{pattern}_body.csv', index_col=0, lineterminator='\n').fillna('')
+            df_txt=df_txt.rename(columns=txt_cols_rename)
 
-        df_txt=pd.read_csv(f'{path}{pattern}_body.csv', index_col=0).fillna('')
-        df_txt=df_txt.rename(columns=txt_cols_rename)
-
-        df_txt['Date']=df_txt.Date.apply(lambda x: str(x))
-        df_txt['Content']=df_txt.Content.apply(lambda x: str(x))
-        df_txt['Entities']=df_txt.Entities.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
-        df_txt['Tickers']=df_txt.Tickers.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
-        df_txt['Hashtags_lower']=df_txt[lookup_column].apply(lambda x: [z.lower() for z in eval(x)])
-        self.df_txt=df_txt
+            df_txt['Date']=df_txt.Date.apply(lambda x: str(x))
+            df_txt['Content']=df_txt.Content.apply(lambda x: str(x))
+            df_txt['Entities']=df_txt.Entities.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
+            df_txt['Tickers']=df_txt.Tickers.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
+            df_txt['Hashtags_lower']=df_txt[lookup_column].apply(lambda x: [z.lower() for z in eval(x)])
+            self.df_txt=df_txt
+        else:
+            self.df_txt=pd.DataFrame([],columns=[]) 
         self.cols_from_txt=['Publisher','Title','Content', 'Date', 'Entities', 'Tickers']
 
 #nws_m=News(pattern='macro', default_category='trump', lookup_column='ent_othr')
@@ -57,51 +74,63 @@ class News():
 
 class StockTwt():
     def __init__(self,path='./data/',pattern='macro',lookup_column='ner_othr', nr_topics=50, caveats=''):
-        try:
-            self.path=path
-            self.pattern=pattern
-            self.caveats=caveats
 
-            ##### TABLES PARAMS ##### 
-            self.nr_topics=nr_topics
-            df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0)
+        self.path=path
+        self.pattern=pattern
+        self.caveats=caveats
+
+        ##### TABLES PARAMS ##### 
+        self.nr_topics=nr_topics
+        ##### TABLES PARAMS ##### 
+        if os.path.exists(f'{path}{pattern}_topics.csv'):
+            df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0, lineterminator='\n')
             df_tpc=df_tpc.head(self.nr_topics).copy()
             self.df_tpc=df_tpc
-            self.selected_topics=[str(tpc).lower() for tpc in self.df_tpc.index.values]
-            self.topic_title='Top Twitter Mentions 48hrs rolling'
             self.default_category=str(self.df_tpc.index[0]).lower() #'ai' --> needs to be lowercase
+        else:
+            self.df_tpc = pd.DataFrame([],columns=[])
+            self.default_category=''
+        self.selected_topics=[str(tpc).lower() for tpc in self.df_tpc.index.values]
+        self.topic_title='Top Twitter Mentions 48hrs rolling'
 
-            # AUTHOR table
-            self.df_aut=pd.read_csv(f'{path}{pattern}_authors.csv', index_col=0)
+
+        # AUTHOR table
+        if os.path.exists(f'{path}{pattern}_authors.csv'):
+            self.df_aut=pd.read_csv(f'{path}{pattern}_authors.csv', index_col=0, lineterminator='\n')
             self.col_entity='hashtags' #'original_user'
-
-            self.authors_limit=30
-            self.authors_title='Nr Articles by entities within the topic'
-            
-
-            df_tim=pd.read_csv(f'{path}{pattern}_time.csv', index_col=0)
+        else:
+            self.df_aut = pd.DataFrame([])
+        self.authors_limit=30
+        self.authors_title='Nr Articles by entities within the topic'
+        
+        if os.path.exists(f'{path}{pattern}_time.csv'):
+            df_tim=pd.read_csv(f'{path}{pattern}_time.csv', index_col=0, lineterminator='\n')
             df_tim['time']=df_tim.time.apply(lambda x: x)
             self.df_tim=df_tim
+        else:
+            self.df_tim=pd.DataFrame([],columns=[])
 
-            # GEO table
+        # GEO table
+        if os.path.exists(f'{path}{pattern}_geo.csv'):
             geo_cols_rename={'id':'Mentions', 'term': 'Term'}
-            df_geo=pd.read_csv(f'{path}{pattern}_geo.csv', index_col=0)
+            df_geo=pd.read_csv(f'{path}{pattern}_geo.csv', index_col=0, lineterminator='\n')
             df_geo=df_geo.rename(columns=geo_cols_rename)
             #df_geo=df_geo[['term','id','Geolocation','lat','lon']].copy()
             self.df_geo=df_geo   
+        else:
+            self.df_geo=pd.DataFrame([],columns=[])
+        #Knowledge Graph
+        #df_grph=pd.read_csv(f'{path}{pattern}_graph.csv', index_col=0)
+        #df_grph['Hashtags_lower']=df_grph['ent_graph'].apply(lambda x: [z.lower() for z in eval(x)])
+        #self.df_grph=df_grph  
 
-            #Knowledge Graph
-            #df_grph=pd.read_csv(f'{path}{pattern}_graph.csv', index_col=0)
-            #df_grph['Hashtags_lower']=df_grph['ent_graph'].apply(lambda x: [z.lower() for z in eval(x)])
-            #self.df_grph=df_grph  
-
-            # BODY table
-            self.sort_col='Favs'
-            self.sort_ascending=False
-            txt_cols_rename={'favorite_count': 'Favs','retweet_count': 'RT', 'created': 'Created', 'location': 'Location',
-                            'user': 'Author', 'full_text': 'Content', 'sentiment': 'Sentiment'}
-
-            df_txt=pd.read_csv(f'{path}{pattern}_body.csv', index_col=0).fillna('')
+        # BODY table
+        self.sort_col='Favs'
+        self.sort_ascending=False
+        txt_cols_rename={'favorite_count': 'Favs','retweet_count': 'RT', 'created': 'Created', 'location': 'Location',
+                        'user': 'Author', 'full_text': 'Content', 'sentiment': 'Sentiment'}
+        if os.path.exists(f'{path}{pattern}_body.csv'):
+            df_txt=pd.read_csv(f'{path}{pattern}_body.csv', index_col=0, lineterminator='\n').fillna('')
             df_txt=df_txt.rename(columns=txt_cols_rename)
 
             df_txt['Created']=df_txt.Created.apply(lambda x: str(x))
@@ -110,9 +139,9 @@ class StockTwt():
             #df_txt['Tickers']=df_txt.Tickers.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
             df_txt['Hashtags_lower']=df_txt[lookup_column].apply(lambda x: [z.lower() for z in eval(x)])
             self.df_txt=df_txt
-            self.cols_from_txt=['Author','Favs','RT','Content', 'Created', 'Location', 'Sentiment']
-        except:
-            self.df_tpc=pd.DataFrame([])
+        else:
+            self.df_txt=pd.DataFrame([],columns=[]) 
+        self.cols_from_txt=['Author','Favs','RT','Content', 'Created', 'Location', 'Sentiment']
 
 #nws_m=News(pattern='macro', default_category='trump', lookup_column='ent_othr')
 #nws_c=News(pattern='company', default_category='nyse', lookup_column='ent_org')

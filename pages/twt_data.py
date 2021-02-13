@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 class Tweets():
     def __init__(self,path='./data/',pattern='AI', default_category='ai'):
@@ -7,42 +8,56 @@ class Tweets():
         self.default_category=default_category
         
         ##### TABLES PARAMS ##### 
-        self.df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0, lineterminator='\n')
+        if os.path.exists(f'{path}{pattern}_topics.csv'):
+            self.df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0, lineterminator='\n')
+        else:
+            self.df_tpc = pd.DataFrame([],columns=[])
         self.selected_topics=[tpc.lower() for tpc in self.df_tpc.index.values]
         self.topic_title=f'Top 50 Hashtags for #{pattern}'
         self.topic_label='Nr Tweets'
 
         # AUTHOR table
-        self.df_aut=pd.read_csv(f'{path}{pattern}_authors.csv', index_col=0, lineterminator='\n')
+        if os.path.exists(f'{path}{pattern}_authors.csv'):
+            self.df_aut=pd.read_csv(f'{path}{pattern}_authors.csv', index_col=0, lineterminator='\n')
+        else:
+            self.df_aut=pd.DataFrame([],columns=[])
         self.col_entity='original_user' 
         
         self.authors_limit=30
         self.authors_title='Nr Tweets by Author per Hashatag'
         
         # TIMELINE table
-        df_tim=pd.read_csv(f'{path}{pattern}_time.csv', index_col=0, lineterminator='\n')
-        df_tim['time']=df_tim.time.apply(lambda x: x[:5])
-        self.df_tim=df_tim
+        if os.path.exists(f'{path}{pattern}_time.csv'):
+            df_tim=pd.read_csv(f'{path}{pattern}_time.csv', index_col=0, lineterminator='\n')
+            df_tim['time']=df_tim.time.apply(lambda x: x[:5])
+            self.df_tim=df_tim
+        else:
+            self.df_tim=pd.DataFrame([],columns=[])
 
         # GEO table
-        geo_cols_rename={'id':'Tweets', 'term': 'Term'}
-        df_geo=pd.read_csv(f'{path}{pattern}_geo.csv', index_col=0, lineterminator='\n')
-        df_geo=df_geo.rename(columns=geo_cols_rename)
-        #df_geo=df_geo[['term','id','Geolocation','lat','lon']].copy()
-        self.df_geo=df_geo      
+        if os.path.exists(f'{path}{pattern}_geo.csv'):
+            geo_cols_rename={'id':'Tweets', 'term': 'Term'}
+            df_geo=pd.read_csv(f'{path}{pattern}_geo.csv', index_col=0, lineterminator='\n')
+            df_geo=df_geo.rename(columns=geo_cols_rename)
+            #df_geo=df_geo[['term','id','Geolocation','lat','lon']].copy()
+            self.df_geo=df_geo      
+        else:
+            self.df_geo=pd.DataFrame([],columns=[])
 
         # BODY table
         self.txt_sort_col='Favs'
         self.txt_sort_ascending=False
         txt_cols_rename={'Favorite Count': 'Favs','Retweet Count': 'RT',
                          'User': 'Author', 'Full Text': 'Content'}
-
-        df_txt=pd.read_csv(f'{path}{pattern}_body.csv', index_col=0, lineterminator='\n')
-        
-        df_txt=df_txt.rename(columns=txt_cols_rename)
-        df_txt['Content']=df_txt.Content.apply(lambda x: x)
-        df_txt['Hashtags_lower']=df_txt.Hashtags.apply(lambda x: [z.lower() for z in eval(x)])
-        self.df_txt=df_txt
+        if os.path.exists(f'{path}{pattern}_body.csv'):
+            df_txt=pd.read_csv(f'{path}{pattern}_body.csv', index_col=0, lineterminator='\n')
+            
+            df_txt=df_txt.rename(columns=txt_cols_rename)
+            df_txt['Content']=df_txt.Content.apply(lambda x: x)
+            df_txt['Hashtags_lower']=df_txt.Hashtags.apply(lambda x: [z.lower() for z in eval(x)])
+            self.df_txt=df_txt
+        else:
+            self.df_txt=pd.DataFrame([],columns=[])
         self.cols_from_txt=['Author','Favs','RT','Content', 'Created At', 'Location']
 
 ai=Tweets()
