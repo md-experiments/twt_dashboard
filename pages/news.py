@@ -53,7 +53,9 @@ def news_layout(n, topic_code):
                                         margin=dict(l=40, r=0, t=40, b=80)
                                     )
                                 )
-                                )]  ,
+                                ),
+                                dcc.Markdown(n.caveats), 
+                                ]  ,
                                 #style={'width': '25%', 'display': 'inline-block'}
                                 ), 
                             html.Div(

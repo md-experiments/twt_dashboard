@@ -2,11 +2,12 @@ import pandas as pd
 import os
 
 class News():
-    def __init__(self,path='./data/',pattern='macro',default_category='us', lookup_column='ner_othr'):
+    def __init__(self,path='./data/',pattern='macro',default_category='us', lookup_column='ner_othr', caveats=''):
         """
         
         pattern: used to load the relevant files
         """
+        self.caveats=caveats
         if 'ufo' in pattern.lower():
             topics_title = 'in disclosures'
             ### FOR BODY
@@ -175,7 +176,8 @@ def select_nws(title):
     elif title.upper().startswith('MACRO'):
         n=News(pattern='macro', default_category='', lookup_column='ent_othr')
     elif title.upper().startswith('UFO (CIA)'):
-        n=News(pattern='UFO_CIA', default_category='', lookup_column='All Entities')
+        caveats='''Documents source: https://www.theblackvault.com/documentarchive/ufos-the-central-intelligence-agency-cia-collection/'''
+        n=News(pattern='UFO_CIA', default_category='', lookup_column='All Entities',caveats=caveats)
     elif title.upper().startswith('NASDAQ100'):
         caveats='''__Caveats:__ NASDAQ run follows the S&P500 run, hence companies present in both will appear mostly on S&P 500 page'''
         n=StockTwt(pattern='NASDAQ100', lookup_column='matched_symbols',caveats=caveats)
