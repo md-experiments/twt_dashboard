@@ -9,8 +9,17 @@ class News():
         """
         if 'ufo' in pattern.lower():
             topics_title = 'in disclosures'
+            ### FOR BODY
+            self.sort_col='All Entities' # 'Favs'
+            self.sort_ascending=False
+            txt_cols_rename={'doc_id': 'Doc ID','date': 'Date','paragraph_id':'Par. #',
+                    'ppl_orgs': 'Entities', 'paragraph': 'Content', 'all_ents': 'All Entities'}
+            self.cols_from_txt=['Doc ID','Par. #','Content', 'Date', 'Entities']
         else:
             topics_title = 'in the news'
+            ### FOR BODY
+            self.sort_col='Date' # 'Favs'
+            self.sort_ascending=False
             txt_cols_rename={'publisher': 'Publisher','date_utc': 'Date',
                     'title':'Title', 'ent_name': 'Entities', 'body': 'Content', 'tickers_ls': 'Tickers'}
             self.cols_from_txt=['Publisher','Title','Content', 'Date', 'Entities', 'Tickers']
@@ -66,8 +75,7 @@ class News():
         else:
             self.df_grph=pd.DataFrame([],columns=[])
         # BODY table
-        self.sort_col='Date' # 'Favs'
-        self.sort_ascending=False
+
 
         if os.path.exists(f'{path}{pattern}_body.csv'):
             df_txt=pd.read_csv(f'{path}{pattern}_body.csv', index_col=0, lineterminator='\n').fillna('')
@@ -76,7 +84,8 @@ class News():
             df_txt['Date']=df_txt.Date.apply(lambda x: str(x))
             df_txt['Content']=df_txt.Content.apply(lambda x: str(x))
             df_txt['Entities']=df_txt.Entities.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
-            df_txt['Tickers']=df_txt.Tickers.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
+            if 'Tickers' in df_txt.columns:
+                df_txt['Tickers']=df_txt.Tickers.apply(lambda x: ', '.join(eval(x)).replace('\xa0',''))
             df_txt['Hashtags_lower']=df_txt[lookup_column].apply(lambda x: [z.lower() for z in eval(x)])
             self.df_txt=df_txt
         else:
@@ -162,32 +171,23 @@ class StockTwt():
 
 def select_nws(title):
     if title.upper().startswith('COMPANY'):
-        #n=nws_c
-        n=News(pattern='company', default_category='nyse', lookup_column='ent_org')
+        n=News(pattern='company', default_category='', lookup_column='ent_org')
     elif title.upper().startswith('MACRO'):
-        #n=nws_m
-        n=News(pattern='macro', default_category='trump', lookup_column='ent_othr')
+        n=News(pattern='macro', default_category='', lookup_column='ent_othr')
     elif title.upper().startswith('UFO (CIA)'):
-        #n=nws_m
-        n=News(pattern='ufo_cia', default_category='trump', lookup_column='ent_othr')
+        n=News(pattern='ufo_cia', default_category='', lookup_column='All Entities')
     elif title.upper().startswith('NASDAQ100'):
-        #n=nws_c
         caveats='''__Caveats:__ NASDAQ run follows the S&P500 run, hence companies present in both will appear mostly on S&P 500 page'''
         n=StockTwt(pattern='NASDAQ100', lookup_column='matched_symbols',caveats=caveats)
     elif title.upper().startswith('SPX'):
-        #n=nws_m
         n=StockTwt(pattern='SPX', lookup_column='matched_symbols')
     elif title.upper().startswith('TSX'):
-        #n=nws_m
         n=StockTwt(pattern='TSX', lookup_column='matched_symbols')
     elif title.upper().startswith('ASX'):
-        #n=nws_c
         n=StockTwt(pattern='ASX', lookup_column='matched_symbols')
     elif title.upper().startswith('STOXX600'):
-        #n=nws_m
         caveats='''__Caveats:__ SPX is a ticker from STOXX600, however, here this is mostly in reference to S&P500'''
         n=StockTwt(pattern='STOXX600', lookup_column='matched_symbols', caveats=caveats)
     elif title.upper().startswith('FTSE100'):
-        #n=nws_m
         n=StockTwt(pattern='FTSE100', lookup_column='matched_symbols')
     return n
