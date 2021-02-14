@@ -22,17 +22,18 @@ from pages.news_data import select_nws
 def stk_twt_layout(n, topic):
     links=['SPX','NASDAQ100','TSX','stoxx600','ASX','FTSE100']
     titles=['SPX','NASDAQ100','TSX','STOXX600','ASX','FTSE100']
-    pattern = 'Sentiment '
+    
     titles.pop(links.index(topic))
     links.remove(topic)
     n=select_nws(topic.upper())
+    patterns = ['Sentiment ']*len(links)
 
     if len(n.df_tpc)==0:
         return html.Div([
                         html.H1(id='nws-h1',children=f'{topic} Social Sentiment 48hrs rolling'),
                         html.Div(id='page-2-content'),
                         html.Br(),
-                        html.Div(card(links,titles, pattern), className='container-fluid'),
+                        html.Div(card(links,titles, patterns), className='container-fluid'),
         ]
         )
 
@@ -77,7 +78,7 @@ def stk_twt_layout(n, topic):
                         html.H1(id='nws-h1',children=f'{topic} Social Sentiment 48hrs rolling'),
                         html.Div(id='page-2-content'),
                         html.Br(),
-                        html.Div(card(links,titles, pattern), className='container-fluid'),
+                        html.Div(card(links,titles, patterns), className='container-fluid'),
                         html.Div(id='dash-container',
                             children=[
                                 html.Div(

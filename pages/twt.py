@@ -24,13 +24,13 @@ def twt_layout(tw, topic):
     titles.pop(links.index(topic))
     links.remove(topic)
     #app_dash.title = f'#{topic} | CountingChickens'
-    pattern='Twitter: #'
+    patterns=['Twitter: #']*len(titles)
     
 
     return html.Div([
     html.H1(id='twt-h1',children=f'#{topic} Tweets Dashboard'),
     html.Div(id='page-1-content'),
-    html.Div(card(links,titles, pattern)),
+    html.Div(card(links,titles, patterns)),
     html.Div(id='dash-container',
                         children=[
                             html.Div(
