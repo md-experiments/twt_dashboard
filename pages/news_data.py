@@ -175,7 +175,7 @@ def select_nws(title):
     elif title.upper().startswith('MACRO'):
         n=News(pattern='macro', default_category='', lookup_column='ent_othr')
     elif title.upper().startswith('UFO (CIA)'):
-        n=News(pattern='ufo_cia', default_category='', lookup_column='All Entities')
+        n=News(pattern='UFO_CIA', default_category='', lookup_column='All Entities')
     elif title.upper().startswith('NASDAQ100'):
         caveats='''__Caveats:__ NASDAQ run follows the S&P500 run, hence companies present in both will appear mostly on S&P 500 page'''
         n=StockTwt(pattern='NASDAQ100', lookup_column='matched_symbols',caveats=caveats)
