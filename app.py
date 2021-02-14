@@ -90,49 +90,36 @@ def toggle_navbar_collapse(n, is_open):
               [Input('url', 'pathname')])
 def display_page(pathname):
     if pathname == '/dashboards/TEA':
-        #app_dash.update_title = '#TEA | CountingChickens'
         return twt.twt_layout(tea,'TEA')
     elif pathname == '/dashboards/COFFEE':
-        #app_dash.title = '#COFFEE | CountingChickens'
         return twt.twt_layout(cof,'COFFEE')
     elif pathname == '/dashboards/FERTILITY':
-        #app_dash.title = '#FERTILITY | CountingChickens'
         return twt.twt_layout(fert,'FERTILITY')
     elif pathname == '/dashboards/MINDSET':
-        #app_dash.title = '#MINDSET | CountingChickens'
         return twt.twt_layout(mind,'MINDSET')
     elif pathname == '/dashboards/FOOD':
-        #app_dash.title = '#FOOD | CountingChickens'
         return twt.twt_layout(food,'FOOD')
     elif pathname == '/dashboards/AI':
-        #app_dash.title = '#AI | CountingChickens'
         return twt.twt_layout(ai,'AI')
     elif pathname == '/dashboards/MACRO':
-        #app_dash.title = 'Macro News | CountingChickens'
         return news.news_layout('','MACRO')
     elif pathname == '/dashboards/COMPANY':
-        #app_dash.title = 'Company News | CountingChickens'
         return news.news_layout('','COMPANY')
+    elif pathname == '/dashboards/UFO_CIA':
+        return news.news_layout('','UFO_CIA')
     elif pathname == '/dashboards/SPX':
-        #app_dash.title = 'Company News | CountingChickens'
         return stk_twt.stk_twt_layout('','SPX')
     elif pathname == '/dashboards/NASDAQ100':
-        #app_dash.title = 'Company News | CountingChickens'
         return stk_twt.stk_twt_layout('','NASDAQ100')
     elif pathname == '/dashboards/TSX':
-        #app_dash.title = 'Company News | CountingChickens'
         return stk_twt.stk_twt_layout('','TSX')
     elif pathname == '/dashboards/STOXX600':
-        #app_dash.title = 'Company News | CountingChickens'
         return stk_twt.stk_twt_layout('','stoxx600')
     elif pathname == '/dashboards/ASX':
-        #app_dash.title = 'Company News | CountingChickens'
         return stk_twt.stk_twt_layout('','ASX')
     elif pathname == '/dashboards/FTSE100':
-        #app_dash.title = 'Company News | CountingChickens'
         return stk_twt.stk_twt_layout('','FTSE100')
     else:
-        #app_dash.title = 'Nest page | CountingChickens'
         return index_page(os.getcwd())
         '''index.index_page'''
 '''
@@ -184,7 +171,7 @@ def update_figure(list_from_click,title):
               [Input('nws-bar-mentions-counts', 'clickData'),Input('nws-h1', 'children')])
 def update_bar_authors(list_from_click, title):
     n=select_nws(title)
-
+    print(n.df_aut.shape)
     if list_from_click:
         list_of_topics=[clk['x'] for clk in list_from_click['points']]
     else:
@@ -359,22 +346,24 @@ def update_map(list_from_click, title):
         list_of_stocks=[clk['x'].lower() for clk in list_from_click['points']]
     else:
         list_of_stocks=[ns.default_category]
+    if len(ns.df_geo)>0:
+        selected_df=ns.df_geo[ns.df_geo.Term.isin(list_of_stocks)]
 
-    selected_df=ns.df_geo[ns.df_geo.Term.isin(list_of_stocks)]
+        rng_min=selected_df.Mentions.min()
+        rng_max=selected_df.Mentions.max()
+        figure=px.density_mapbox(data_frame=selected_df,lat='lat', lon='lon', z='Mentions', radius=20,
+                                center = {"lat": 37.0902, "lon": -0.7129},zoom=0,
+                                hover_name="location", hover_data=["Mentions", "Term"],
+                                color_continuous_scale="Viridis",
+                                range_color=(rng_min, rng_max),
+                                mapbox_style="carto-positron")
+        #figure.update_layout(margin={"r":1,"t":1.5,"l":1,"b":0.5})
+        figure.update_layout(margin={"t":3,"b":6})
+        return figure
+    else:
+        return dcc.Graph()
 
-    rng_min=selected_df.Mentions.min()
-    rng_max=selected_df.Mentions.max()
-    figure=px.density_mapbox(data_frame=selected_df,lat='lat', lon='lon', z='Mentions', radius=20,
-                            center = {"lat": 37.0902, "lon": -0.7129},zoom=0,
-                            hover_name="location", hover_data=["Mentions", "Term"],
-                            color_continuous_scale="Viridis",
-                            range_color=(rng_min, rng_max),
-                            mapbox_style="carto-positron")
-    #figure.update_layout(margin={"r":1,"t":1.5,"l":1,"b":0.5})
-    figure.update_layout(margin={"t":3,"b":6})
-    return figure
-
-@app_dash.callback(Output('nws-kg', 'figure'),
+@app_dash.callback(Output('nws-kg', 'children'),
               [Input('nws-bar-mentions-counts', 'clickData'),Input('nws-h1', 'children')])
 def update_kg(list_from_click, title):
     ns=select_nws(title)
@@ -385,29 +374,32 @@ def update_kg(list_from_click, title):
         list_of_stocks=[ns.default_category]
 
     df_out=ns.df_grph.copy()
-    indicator=ns.df_grph['Hashtags_lower'].apply(lambda x: len(set(x) & set(list_of_stocks))>0).values
-    relevant_kgs=list(df_out[indicator].graph.values)
-    
-    fs=FrameStacker()
+    if len(df_out)>0:
+        indicator=ns.df_grph['Hashtags_lower'].apply(lambda x: len(set(x) & set(list_of_stocks))>0).values
+        relevant_kgs=list(df_out[indicator].graph.values)
+        
+        fs=FrameStacker()
 
-    '''
-    random_layout
-    shell_layout
-    spring_layout
-    spectral_layout
-    '''
-    if len(relevant_kgs)>0:
-        for kg in relevant_kgs:
-            k=pd.read_json(kg)
-            fs.append(k)
-        kg_df=fs.stack()
+        '''
+        random_layout
+        shell_layout
+        spring_layout
+        spectral_layout
+        '''
+        if len(relevant_kgs)>0:
+            for kg in relevant_kgs:
+                k=pd.read_json(kg)
+                fs.append(k)
+            kg_df=fs.stack()
+        else:
+            txt_kg='{"source":{"0":"Nothing"},"edge":{"0":"to"},"target":{"0":"show ..."}}'
+            kg_df=pd.read_json(txt_kg)
+
+        figure=build_graph(kg_df,nx.spring_layout)
+        graph = [dcc.Graph(figure)]
     else:
-        txt_kg='{"source":{"0":"Nothing"},"edge":{"0":"to"},"target":{"0":"show ..."}}'
-        kg_df=pd.read_json(txt_kg)
-
-    figure=build_graph(kg_df,nx.spring_layout)
-
-    return figure
+        graph = html.Div([])
+    return graph
 #if __name__ == '__main__':
 #    app.run_server(host='0.0.0.0',debug=True)
 

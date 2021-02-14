@@ -27,13 +27,13 @@ if __name__ == "__main__":
     es=Elasticsearch(es_details['url'])
 
     ls_aggs=['topics','authors','time','geo','body','graph','-rpts-length']
-    reports=['macro','company']
+    reports=['macro','company','UFO_CIA']
 
     for report in reports:
         len_files=es.get(index='cc-aggs-latest--rpts-length',id=report)['_source']
         
         for agg in ls_aggs[:6]:
-            if len_files[agg]>0:
+            if len_files.get(agg,0)>0:
                 id_ls=[report+'doc'+norm_int(i,nr_digits=6) for i in range(len_files[agg])]
 
                 res=es.mget(index = f'cc-aggs-latest-{agg}',body = {'ids': id_ls})
@@ -42,7 +42,7 @@ if __name__ == "__main__":
                 if agg=='topics':
                     df=df.set_index('Category').sort_values('Mentions', ascending=False)
                 df.to_csv(f'{path}{report}_{agg}.csv')
-            print(agg,len_files[agg])
+            print(agg,len_files.get(agg,0))
 
     rpt_type='twt'
     ls_aggs=['topics','authors','time','geo','body']

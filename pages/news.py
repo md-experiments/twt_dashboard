@@ -16,18 +16,23 @@ from pages.news_data import select_nws
 
 
 
-def news_layout(n, topic):
-    links=['MACRO','COMPANY']
-    titles=['Macro','Company']
-    pattern = 'News '
-    titles.pop(links.index(topic))
-    links.remove(topic)
+def news_layout(n, topic_code):
+    links=['MACRO','COMPANY','UFO_CIA']
+    titles=['Macro','Company','UFO (CIA)']
+    patterns = ['News ','News ','']
+    
+    topic = titles[links.index(topic_code)]
+    titles.pop(links.index(topic_code))
+    patterns.pop(links.index(topic_code))
+
+    links.remove(topic_code)
+
     n=select_nws(topic.upper())
     return html.Div([
-                    html.H1(id='nws-h1',children=f'{topic} News Dashboard February 2020'),
+                    html.H1(id='nws-h1',children=f'{topic} Dashboard'),
                     html.Div(id='page-2-content'),
                     html.Br(),
-                    html.Div(card(links,titles, pattern), className='container-fluid'),
+                    html.Div(card(links, titles, patterns), className='container-fluid'),
                     html.Div(id='dash-container',
                         children=[
                             html.Div(
@@ -36,7 +41,7 @@ def news_layout(n, topic):
                                 id='nws-bar-mentions-counts',
                                 figure=dict(
                                     data= [
-                                            {'x': list(n.df_tpc.index.values), 'y': list(n.df_tpc.Mentions.values), 'type': 'bar', 'name': 'Nr Tweets'}
+                                            {'x': list(n.df_tpc.index.values), 'y': list(n.df_tpc.Mentions.values), 'type': 'bar', 'name': 'Nr Articles'}
                                         ],
                                     layout=dict(
                                         title=n.topic_title,
@@ -73,12 +78,7 @@ def news_layout(n, topic):
                                 style={'width': '30%', 'display': 'inline-block'}
                                 ), 
                             html.H1('',''),
-                            html.Div([
-                                    dcc.Graph(
-                                        id='nws-kg',
-                                    )
-                                ]
-                            ),
+                            html.Div(id='nws-kg',),
                             html.H1('',''),
                             html.Div(
                                 id='nws-table',

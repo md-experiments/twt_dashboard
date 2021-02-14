@@ -3,17 +3,31 @@ import os
 
 class News():
     def __init__(self,path='./data/',pattern='macro',default_category='us', lookup_column='ner_othr'):
+        """
+        
+        pattern: used to load the relevant files
+        """
+        if 'ufo' in pattern.lower():
+            topics_title = 'in disclosures'
+        else:
+            topics_title = 'in the news'
+            txt_cols_rename={'publisher': 'Publisher','date_utc': 'Date',
+                    'title':'Title', 'ent_name': 'Entities', 'body': 'Content', 'tickers_ls': 'Tickers'}
+            self.cols_from_txt=['Publisher','Title','Content', 'Date', 'Entities', 'Tickers']
+
         self.path=path
         self.pattern=pattern
-        self.default_category=default_category #'ai' --> needs to be lowercase
+        #self.default_category=default_category #'ai' --> needs to be lowercase
 
         ##### TABLES PARAMS ##### 
         if os.path.exists(f'{path}{pattern}_topics.csv'):
             self.df_tpc=pd.read_csv(f'{path}{pattern}_topics.csv', index_col=0, lineterminator='\n')
+            self.default_category=str(self.df_tpc.index[0]).lower() 
+
         else:
             self.df_tpc = pd.DataFrame([],columns=[])   
         self.selected_topics=[str(tpc).lower() for tpc in self.df_tpc.index.values]
-        self.topic_title='Top Mentions in the News'
+        self.topic_title=f'Top Mentions {topics_title}'
 
         # AUTHOR table
         if os.path.exists(f'{path}{pattern}_authors.csv'):
@@ -28,7 +42,8 @@ class News():
         # TIMELINE table
         if os.path.exists(f'{path}{pattern}_time.csv'):
             df_tim=pd.read_csv(f'{path}{pattern}_time.csv', index_col=0, lineterminator='\n')
-            df_tim['time']=df_tim.time.apply(lambda x: x)
+            if len(df_tim)>0:
+                df_tim = df_tim.sort_values('time',)
             self.df_tim=df_tim
         else:
             self.df_tim=pd.DataFrame([],columns=[])
@@ -53,8 +68,7 @@ class News():
         # BODY table
         self.sort_col='Date' # 'Favs'
         self.sort_ascending=False
-        txt_cols_rename={'publisher': 'Publisher','date_utc': 'Date',
-                            'title':'Title', 'ent_name': 'Entities', 'body': 'Content', 'tickers_ls': 'Tickers'}
+
         if os.path.exists(f'{path}{pattern}_body.csv'):
             df_txt=pd.read_csv(f'{path}{pattern}_body.csv', index_col=0, lineterminator='\n').fillna('')
             df_txt=df_txt.rename(columns=txt_cols_rename)
@@ -67,7 +81,7 @@ class News():
             self.df_txt=df_txt
         else:
             self.df_txt=pd.DataFrame([],columns=[]) 
-        self.cols_from_txt=['Publisher','Title','Content', 'Date', 'Entities', 'Tickers']
+        
 
 #nws_m=News(pattern='macro', default_category='trump', lookup_column='ent_othr')
 #nws_c=News(pattern='company', default_category='nyse', lookup_column='ent_org')
@@ -153,6 +167,9 @@ def select_nws(title):
     elif title.upper().startswith('MACRO'):
         #n=nws_m
         n=News(pattern='macro', default_category='trump', lookup_column='ent_othr')
+    elif title.upper().startswith('UFO (CIA)'):
+        #n=nws_m
+        n=News(pattern='ufo_cia', default_category='trump', lookup_column='ent_othr')
     elif title.upper().startswith('NASDAQ100'):
         #n=nws_c
         caveats='''__Caveats:__ NASDAQ run follows the S&P500 run, hence companies present in both will appear mostly on S&P 500 page'''

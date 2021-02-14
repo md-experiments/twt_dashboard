@@ -49,6 +49,17 @@ navbar = dbc.Navbar(
             nav=True,
             in_navbar=True,
             label="News",
+        ),
+        dbc.DropdownMenu(
+            children=
+                [dbc.DropdownMenuItem("Other", header=True),]+
+                [
+                    dbc.DropdownMenuItem(f"UFO (CIA)", href=f"/dashboards/UFO_CIA", external_link=True),
+                    ]
+                ,
+            nav=True,
+            in_navbar=True,
+            label="Other",
         ),]
         , id="navbar-collapse", navbar=True),
     ],
@@ -74,14 +85,14 @@ navbar = dbc.Navbar(
         className='card'  
     )'''
 
-def card(links,titles, pattern):
+def card(links,titles, patterns):
     output=dbc.Row([dbc.Col(dbc.Card(
             id=f'main-{i}',
             children=[
                 html.Img(src=os.path.join(os.getcwd(), f'/assets/{links[i].lower()}.png'), style={'width':'100%'}),
                 dbc.CardBody(
                     [html.Br(), 
-                    dbc.Button(f'{pattern}{titles[i]}', href=f'/dashboards/{links[i].upper()}', external_link=True, size="sm")],
+                    dbc.Button(f'{patterns[i]}{titles[i]}', href=f'/dashboards/{links[i].upper()}', external_link=True, size="sm")],
                     style={'justify-content': 'flex-end',
                             'align-items': 'flex-end'},
                     className='card-img-overlay'
